@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modive 관리자</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <img src="../FE/src/assets/modive_logo.png" alt="Modive Logo" class="logo">
+                <div class="header-right">
+                    <span class="user-info">관리자</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- User Management Section -->
+            <section class="user-section">
+                <div class="section-header">
+                    <h2>사용자 관리</h2>
+                    <div class="dropdown-container">
+                        <div class="dropdown">
+                            <span>10개씩 보기</span>
+                            <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 16 16">
+                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>사용자 ID</th>
+                                <th>이름</th>
+                                <th>이메일</th>
+                                <th>가입일</th>
+                                <th>상태</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                            <!-- 사용자 데이터가 여기에 동적으로 추가됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Seed Management Section -->
+            <section class="seed-section">
+                <div class="seed-header">
+                    <h2>씨앗 관리</h2>
+                    <button class="detail-btn">상세보기</button>
+                </div>
+                
+                <div class="seed-stats">
+                    <div class="seed-card">
+                        <div class="seed-label">전체 잔여 씨앗</div>
+                        <div class="seed-value" id="remaining-seeds">1,247,890</div>
+                    </div>
+                    <div class="seed-card">
+                        <div class="seed-label">전체 발급 씨앗</div>
+                        <div class="seed-value" id="issued-seeds">1,347,890</div>
+                    </div>
+                    <div class="seed-card">
+                        <div class="seed-label">전체 사용 씨앗</div>
+                        <div class="seed-value" id="used-seeds">100,000</div>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h3>필터 3개로 - 사용자, 발급일, 발급 사유</h3>
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label>사용자</label>
+                            <select id="user-filter">
+                                <option value="">전체</option>
+                                <!-- 사용자 옵션들이 동적으로 추가됩니다 -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>발급일</label>
+                            <input type="date" id="issue-date-filter">
+                        </div>
+                        <div class="filter-group">
+                            <label>발급 사유</label>
+                            <select id="reason-filter">
+                                <option value="">전체</option>
+                                <option value="회원가입">회원가입</option>
+                                <option value="이벤트">이벤트</option>
+                                <option value="보상">보상</option>
+                                <option value="기타">기타</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="seed-table">
+                        <thead>
+                            <tr>
+                                <th>사용자</th>
+                                <th>발급일</th>
+                                <th>발급 사유</th>
+                                <th>발급 수량</th>
+                                <th>사용 수량</th>
+                                <th>잔여 수량</th>
+                            </tr>
+                        </thead>
+                        <tbody id="seed-table-body">
+                            <!-- 씨앗 데이터가 여기에 동적으로 추가됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
