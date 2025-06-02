@@ -2,6 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Image from 'next/image'; // Image 컴포넌트 import
 import {
   ChartBarIcon,
   UserGroupIcon,
@@ -50,7 +51,13 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Modive 관리자' })
         <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
           {/* Logo / Title */}
           <div className="h-16 flex items-center justify-center border-b border-gray-200">
-            <span className="text-2xl font-bold">MODiVE</span>
+            <Image
+              src="/assets/modive_logo.svg"
+              alt="MODiVE 로고"
+              width={89}
+              height={19}
+              priority
+            />
           </div>
 
           {/* Navigation */}
