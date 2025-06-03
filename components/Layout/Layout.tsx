@@ -6,6 +6,7 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   ChartPieIcon,
+    ChatBubbleBottomCenterIcon
 } from '@heroicons/react/24/outline';
 
 interface LayoutProps {
@@ -35,6 +36,12 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Modive 관리자' })
       icon: ChartPieIcon,
       current: router.pathname.startsWith('/analytics'),
     },
+    {
+      name: "챗봇",
+      href: "/custom",
+      icon: ChatBubbleBottomCenterIcon,
+      current: router.pathname.startsWith("/custom"),
+    }
   ];
 
   return (
