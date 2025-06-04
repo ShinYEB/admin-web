@@ -83,7 +83,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Modive 관리자' })
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 py-6 px-8">{children}</main>
+        <main className="w-full px-4 py-8">{children}</main>
       </div>
     </>
   );

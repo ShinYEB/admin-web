@@ -15,8 +15,9 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
-import MonthlyRewardsChart from '@/components/analytics/MonthlyRewardsChart';
-import Card from '@/components/ui/Card';
+import MonthlyRewardsChart from '@/components/analytics/MonthlyRewardsChart'  ;
+import Card from '@/components/UI/Card';
+import RewardHistory from '@/components/analytics/RewardHistory';
 
 // Chart.js 등록
 ChartJS.register(
@@ -301,6 +302,12 @@ const AnalyticsPage = () => {
           <Card className="p-4 mt-6">
             <h2 className="text-lg font-medium mb-4">월별 씨앗 지급 추이</h2>
             <MonthlyRewardsChart />
+          </Card>
+          
+          {/* 최근 씨앗 발급 내역 추가 - md:col-span-2 추가 */}
+          <Card className="p-4 mt-6 md:col-span-2">
+            <h2 className="text-lg font-medium mb-4">최근 씨앗 발급 내역</h2>
+            <RewardHistory />
           </Card>
         </div>
       </div>
