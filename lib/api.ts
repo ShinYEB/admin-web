@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/config/env';
+import { authService } from '@/services/authService';
 
 // ApiResponse 타입이 없는 경우 정의
 export interface ApiResponse<T = any> {
@@ -231,19 +232,15 @@ export async function fetchApi<T>(endpoint: string, options: FetchOptions = {}):
     
     console.log('요청 URL:', apiUrl);
     
+    // 기본 헤더
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'x-user-id': options.userId || '1',
       ...options.customHeaders
     };
     
-    // 토큰 설정
-    const token = localStorage.getItem('authToken') || 
-      'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMjYwNWZkZS04OWUyLTQ0M2YtOWUwMC1kZTRmZjcyN2RhM2IiLCJ1c2VySWQiOiIyMjYwNWZkZS04OWUyLTQ0M2YtOWUwMC1kZTRmZjcyN2RhM2IiLCJyb2xlIjoiQURNSU4iLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiaWF0IjoxNzQ5MDM1NTAzLCJleHAiOjE3NDkwMzkxMDN9.K8jI1YS6jMmiONl52Two04n7CTrSv95QAqum_z_VHoo';
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    // 인증 서비스에서 인증 헤더 가져오기
+    const authHeaders = authService.getAuthHeaders();
+    Object.assign(headers, authHeaders);
     
     console.log('요청 헤더:', headers);
     
@@ -260,6 +257,27 @@ export async function fetchApi<T>(endpoint: string, options: FetchOptions = {}):
       });
       
       clearTimeout(timeoutId);
+      
+      // 인증 오류 처리 (401 Unauthorized)
+      if (response.status === 401) {
+        console.warn('인증 토큰이 만료되었습니다. 토큰 갱신 시도...');
+        
+        // 토큰 갱신 시도
+        const refreshed = await authService.refreshAccessToken();
+        
+        if (refreshed) {
+          // 토큰 갱신 성공 시 재요청
+          console.log('토큰 갱신 성공. 요청 재시도...');
+          return fetchApi(endpoint, options);
+        } else {
+          // 토큰 갱신 실패 시 로그인 페이지로 이동
+          console.error('토큰 갱신 실패. 재로그인이 필요합니다.');
+          authService.logout();
+          window.location.href = '/auth/login';
+          throw new Error('인증이 만료되었습니다. 다시 로그인해 주세요.');
+        }
+      }
+      
       console.log(`API 응답 상태: ${response.status} ${response.statusText}`);
       
       // 응답 텍스트 가져오기
@@ -270,10 +288,7 @@ export async function fetchApi<T>(endpoint: string, options: FetchOptions = {}):
       if (!response.ok) {
         console.error(`API 오류: ${response.status} ${response.statusText}`);
         console.error('오류 응답:', text);
-        
-        // 오류 발생 시 Mock 데이터로 대체
-        console.log('API 오류로 인해 Mock 데이터로 대체합니다.');
-        return getMockData(endpoint) as T;
+        throw new Error(`HTTP Error: ${response.status}`);
       }
       
       // JSON 파싱
@@ -287,8 +302,7 @@ export async function fetchApi<T>(endpoint: string, options: FetchOptions = {}):
         }
       } catch (parseError) {
         console.error('JSON 파싱 오류:', parseError);
-        console.log('JSON 파싱 실패, Mock 데이터로 대체합니다.');
-        return getMockData(endpoint) as T;
+        throw new Error('JSON 파싱 실패');
       }
     } catch (fetchError) {
       clearTimeout(timeoutId);
@@ -298,10 +312,14 @@ export async function fetchApi<T>(endpoint: string, options: FetchOptions = {}):
   } catch (error) {
     console.error('API 요청 실패:', error);
     
-    // 모든 오류 상황에서 Mock 데이터로 대체
-    console.log('오류 발생, Mock 데이터로 대체합니다.');
-    const mockResult = getMockData(endpoint) as T;
-    console.log('Mock 데이터 반환:', mockResult);
-    return mockResult;
+    // 네트워크 오류 시 Mock 데이터로 대체
+    if (process.env.NODE_ENV === 'development') {
+      console.log('오류 발생, Mock 데이터로 대체합니다.');
+      const mockResult = getMockData(endpoint) as T;
+      console.log('Mock 데이터 반환:', mockResult);
+      return mockResult;
+    }
+    
+    throw error;
   }
 }
