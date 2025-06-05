@@ -1,268 +1,269 @@
-import { User, UserDetail, UserDrivingRecord, UserSeedRecord } from '@/types/user';
-import { authService } from '@/services/authService';
+// api/users.ts
+import {
+  User,
+  UserDetail,
+  DrivingRecord,
+  SeedRecord,
+  FilterParams,
+  PageResponse,
+  CommonRes,
+  UserListItem,
+  UserRewardItem,
+  UserDriveListItem,
+  UCFilterUserResData,
+} from '@/types/user';
+import { fetchApi } from '@/lib/api';
 
 class UserService {
-  // API 엔드포인트 기본 경로를 Next.js API 라우트로 사용
-  private baseUrl = '/api/modive';
-
-  // 인증 헤더 가져오기
-  private getAuthHeaders() {
-    const token = authService.getToken();
-    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  // 백엔드 UserListItem을 프론트엔드 User 타입으로 변환
+  private mapToUser(item: UserListItem): User {
+    return {
+      userId: item.userId,
+      nickname: item.nickname,
+      email: item.email,
+      experience: item.experience,
+      joinedAt: item.joinedAt,
+      driveCount: item.driveCount,
+      isActive: item.isActive,
+    };
   }
 
-  // 사용자 목록 조회 + 운전 횟수
-  async getUsersWithDriveCount(params: { page: number; pageSize: number }): Promise<any> {
+  // 백엔드 UserListItem을 프론트엔드 UserDetail 타입으로 변환
+  private mapToUserDetail(item: UserListItem): UserDetail {
+    return {
+      userId: item.userId,
+      nickname: item.nickname,
+      email: item.email,
+      experience: item.experience,
+      joinedAt: item.joinedAt,
+      driveCount: item.driveCount,
+      isActive: item.isActive,
+    };
+  }
+
+  // 사용자 목록 조회 (필터링 포함) - 통합 메서드
+  async getUsersWithDriveCount(params: FilterParams = {}): Promise<PageResponse<User>> {
     try {
-      return await this.filterUsers({
-        page: params.page,
-        pageSize: params.pageSize,
-      });
+      // 이메일 검색이 있는 경우만 별도 API 사용
+      if (params.email && params.email.trim()) {
+        return await this.searchUsers(params.email.trim(), params);
+      }
+      
+      // 모든 경우에 필터링 API 사용 (조건이 없어도 기본 목록과 동일)
+      return await this.filterUsers(params);
     } catch (error) {
       console.error('사용자 조회 실패:', error);
       throw error;
     }
   }
 
-  // 필터를 사용하여 사용자 목록 조회
-  async filterUsers(filters: any = {}): Promise<any> {
+  // 사용자 검색 (GET /admin/users/search) - 이메일 검색
+  private async searchUsers(searchKeyword: string, params: FilterParams): Promise<PageResponse<User>> {
     try {
-      console.log("필터 API 호출:", filters);
+      // 이메일을 안전하게 URL 인코딩
+      const encodedEmail = encodeURIComponent(searchKeyword);
+      const endpoint = `/admin/users/search?searchKeyword=${encodedEmail}`;
       
-      // 쿼리 파라미터 구성
-      const queryParams = new URLSearchParams();
+      console.log('이메일 검색 API 호출:', endpoint);
+      console.log('원본 이메일:', searchKeyword);
+      console.log('인코딩된 이메일:', encodedEmail);
       
-      // 페이지네이션 파라미터
-      if (filters.page !== undefined) queryParams.append('page', filters.page.toString());
-      if (filters.pageSize !== undefined) queryParams.append('pageSize', filters.pageSize.toString());
-      
-      // 필터 파라미터
-      if (filters.email) queryParams.append('email', filters.email);
-      if (filters.minExperience !== undefined) queryParams.append('minExperience', filters.minExperience.toString());
-      if (filters.maxExperience !== undefined) queryParams.append('maxExperience', filters.maxExperience.toString());
-      if (filters.accountAgeInMonths !== undefined) queryParams.append('accountAgeInMonths', filters.accountAgeInMonths.toString());
-      if (filters.active !== undefined) queryParams.append('active', filters.active.toString());
-      
-      const queryString = queryParams.toString();
-      const url = `${this.baseUrl}/admin/users/filter${queryString ? '?' + queryString : ''}`;
-      
-      console.log("API 요청 URL:", url);
-      
-      const response = await fetch(url, {
+      const result = await fetchApi<CommonRes<{ searchResult: UserListItem[] }>>(endpoint, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-        // credentials: 'include', // 필요한 경우 쿠키 포함
       });
       
-      if (!response.ok) {
-        console.error(`API 오류 응답: ${response.status} ${response.statusText}`);
-        // 응답 본문 확인
-        try {
-          const errorText = await response.text();
-          console.error('오류 응답 본문:', errorText);
-        } catch (e) {
-          console.error('오류 응답 본문을 읽을 수 없음');
-        }
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
-      }
+      console.log('검색 결과:', result);
       
-      const data = await response.json();
-      return data;
+      const users = result.data.searchResult.map(item => this.mapToUser(item));
+
+      const page = params.page || 0;
+      const pageSize = params.pageSize || 10;
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedUsers = users.slice(startIndex, endIndex);
+      const totalElements = users.length;
+      const totalPages = Math.ceil(totalElements / pageSize);
+
+      return {
+        content: paginatedUsers,
+        number: page,
+        size: pageSize,
+        totalElements,
+        totalPages,
+        first: page === 0,
+        last: page >= totalPages - 1,
+      };
     } catch (error) {
-      console.error("필터 API 호출 실패:", error);
-      
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error('서버 연결 실패: CORS 설정을 확인하거나 서버가 실행 중인지 확인해주세요.');
-      }
-      
+      console.error('이메일 검색 실패:', error);
       throw error;
     }
   }
 
-  // 사용자 상세 정보 조회
-  async getUserDetail(userId: string): Promise<UserDetail> {
+  // 사용자 필터링 (GET /admin/users/filter) - 기본 목록 조회도 겸함
+  private async filterUsers(params: FilterParams): Promise<PageResponse<User>> {
     try {
-      const response = await fetch(`${this.baseUrl}/admin/users/${userId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-      });
+      const searchParams = new URLSearchParams();
       
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
+      // 필터 조건들 (있을 때만 추가)
+      if (params.minExperience !== undefined && params.minExperience !== null) {
+        searchParams.append('minExperience', params.minExperience.toString());
+      }
+      if (params.maxExperience !== undefined && params.maxExperience !== null) {
+        searchParams.append('maxExperience', params.maxExperience.toString());
+      }
+      if (params.accountAgeInMonths !== undefined && params.accountAgeInMonths !== null) {
+        searchParams.append('accountAgeInMonths', params.accountAgeInMonths.toString());
+      }
+      if (params.active !== undefined && params.active !== null) {
+        searchParams.append('active', params.active.toString());
       }
       
-      const data = await response.json();
-      return data;
+      // 페이지네이션 (필수)
+      searchParams.append('page', (params.page || 0).toString());
+      searchParams.append('pageSize', (params.pageSize || 10).toString());
+
+      const endpoint = `/admin/users/filter?${searchParams.toString()}`;
+      console.log('필터 API 호출:', endpoint);
+
+      const result = await fetchApi<CommonRes<{ filterResult: UCFilterUserResData }>>(endpoint, {
+        method: 'GET',
+      });
+      
+      console.log('필터 API 응답 데이터:', result);
+      
+      const filterData = result.data.filterResult;
+      const users = filterData.content.map(item => this.mapToUser(item));
+
+      return {
+        content: users,
+        number: filterData.number,
+        size: filterData.size,
+        totalElements: filterData.totalElements,
+        totalPages: filterData.totalPages,
+        first: filterData.first,
+        last: filterData.last,
+      };
     } catch (error) {
-      console.error("사용자 상세 정보 조회 실패:", error);
+      console.error('필터 API 호출 실패:', error);
       throw error;
+    }
+  }
+
+  // 사용자 상세 조회 
+  async getUserDetailWithDriveCount(userId: string): Promise<UserDetail> {
+    try {
+      const endpoint = `/admin/users/${userId}`;
+      
+      const result = await fetchApi<CommonRes<{ userDetail: UserListItem[] }>>(endpoint, {
+        method: 'GET',
+      });
+      
+      if (result.data.userDetail && result.data.userDetail.length > 0) {
+        return this.mapToUserDetail(result.data.userDetail[0]);
+      }
+      
+      throw new Error('사용자 정보를 찾을 수 없습니다.');
+    } catch (error) {
+      console.error(`사용자 상세 조회 실패 (userId: ${userId}):`, error);
+      throw error;
+    }
+  }
+
+  // 사용자 탈퇴
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      const endpoint = `/admin/users/${userId}/delete`;
+      
+      await fetchApi<CommonRes<any>>(endpoint, {
+        method: 'POST',
+      });
+      
+      console.log(`사용자 탈퇴 성공 (userId: ${userId})`);
+    } catch (error) {
+      console.error(`사용자 탈퇴 실패 (userId: ${userId}):`, error);
+      throw error;
+    }
+  }
+
+  // 사용자 씨앗 내역 조회
+  async getUserRewards(userId: string, page: number = 0, pageSize: number = 10): Promise<SeedRecord[]> {
+    try {
+      const endpoint = `/admin/users/${userId}/rewards?page=${page}&pageSize=${pageSize}`;
+      
+      const result = await fetchApi<CommonRes<{ rewardHistory: UserRewardItem[] }>>(endpoint, {
+        method: 'GET',
+      });
+      
+      console.log('씨앗 내역 API 응답:', result);
+      
+      // 안전 가드: rewardHistory가 존재하고 배열인지 확인
+      if (!result?.data?.rewardHistory) {
+        console.warn('씨앗 내역 데이터가 없습니다:', result);
+        return [];
+      }
+      
+      if (!Array.isArray(result.data.rewardHistory)) {
+        console.warn('씨앗 내역이 배열이 아닙니다:', result.data.rewardHistory);
+        return [];
+      }
+      
+      // 백엔드 UserRewardItem을 프론트엔드 SeedRecord로 변환
+      // UserRewardItem: { issuedDate: string, reason: string, amount: number }
+      return result.data.rewardHistory.map(item => ({
+        issuedDate: new Date(item.issuedDate).toISOString().split('T')[0],
+        reason: item.reason || '알 수 없음',
+        amount: item.amount || 0,
+      }));
+    } catch (error) {
+      console.error(`씨앗 내역 조회 실패 (userId: ${userId}):`, error);
+      
+      // 에러 시 빈 배열 반환 (에러를 던지지 않음)
+      return [];
     }
   }
 
   // 사용자 운전 기록 조회
-  async getUserDrivingRecords(userId: string): Promise<UserDrivingRecord[]> {
+  async getUserDrives(userId: string, pageSize: number = 10): Promise<DrivingRecord[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/admin/users/${userId}/drives`, {
+      const endpoint = `/admin/users/drives/${userId}?pageSize=${pageSize}`;
+      
+      const result = await fetchApi<CommonRes<{ 
+        driveHistory: UserDriveListItem[]; 
+        startTime?: string; 
+        driveId?: string; 
+      }>>(endpoint, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
       });
       
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
+      console.log('운전 기록 API 응답:', result);
+      
+      // 안전 가드: driveHistory가 존재하고 배열인지 확인
+      if (!result?.data?.driveHistory) {
+        console.warn('운전 기록 데이터가 없습니다:', result);
+        return [];
       }
       
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("사용자 운전 기록 조회 실패:", error);
-      throw error;
-    }
-  }
-
-  // 사용자 씨앗 기록 조회
-  async getUserSeedRecords(userId: string): Promise<UserSeedRecord[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/admin/users/${userId}/seeds`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
+      if (!Array.isArray(result.data.driveHistory)) {
+        console.warn('운전 기록이 배열이 아닙니다:', result.data.driveHistory);
+        return [];
       }
       
-      const data = await response.json();
-      return data;
+      // 백엔드 UserDriveListItem을 프론트엔드 DrivingRecord로 변환
+      // UserDriveListItem: { date: string, driveDuration: number, events: UserDriveListEventItem[], rewards: number }
+      return result.data.driveHistory.map(item => ({
+        date: new Date(item.date).toISOString().split('T')[0],
+        distance: '0km', // 백엔드에서 제공하지 않음
+        duration: `${item.driveDuration}분`,
+        event: item.events && Array.isArray(item.events) && item.events.length > 0 
+          ? `${item.events.length}건` 
+          : '0건',
+        seeds: item.rewards || 0,
+      }));
     } catch (error) {
-      console.error("사용자 씨앗 기록 조회 실패:", error);
-      throw error;
-    }
-  }
-
-  // 사용자 탈퇴 처리
-  async deleteUser(userId: string): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-      });
+      console.error(`운전 기록 조회 실패 (userId: ${userId}):`, error);
       
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("사용자 탈퇴 처리 실패:", error);
-      throw error;
-    }
-  }
-
-  // 관리자 통계 대시보드 요약 데이터 조회
-  async getDashboardSummary(): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/admin/dashboard/summary`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("대시보드 요약 데이터 조회 실패:", error);
-      throw error;
-    }
-  }
-
-  // 월별 운전 통계 조회
-  async getMonthlyDrives(): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/admin/dashboard/monthly-drives`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("월별 운전 통계 조회 실패:", error);
-      throw error;
-    }
-  }
-
-  // 이벤트별 통계 조회
-  async getEventsByReason(): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/admin/dashboard/events-by-reason`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("이벤트별 통계 조회 실패:", error);
-      throw error;
-    }
-  }
-
-  // 사용자 트렌드 조회
-  async getUserTrends(): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/admin/dashboard/user-trends`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("사용자 트렌드 조회 실패:", error);
-      throw error;
+      // 에러 시 빈 배열 반환 (에러를 던지지 않음)
+      return [];
     }
   }
 }

@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('회원가입 처리 중 오류:', error);
     res.status(500).json({ 
       message: '회원가입 처리 중 오류가 발생했습니다',
-      error: error.message 
+      error: typeof error === 'object' && error !== null && 'message' in error ? (error as { message: string }).message : String(error)
     });
   }
 }
