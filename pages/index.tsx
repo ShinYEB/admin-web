@@ -21,11 +21,24 @@ const Dashboard = () => {
   } = useUserTrendsStore();
   
   useEffect(() => {
-    // API 데이터 로딩
-    fetchDashboardSummary();
-    fetchMonthlyDrives();
-    fetchEventsByReason();
-    fetchUserTrends();
+    const loadData = async () => {
+      try {
+        // 디버깅을 위한 순차적 API 호출
+        console.log("대시보드 데이터 로딩 시작");
+        await fetchDashboardSummary();
+        console.log("대시보드 통계 로드 완료, 월별 운전 데이터 로딩 시작");
+        await fetchMonthlyDrives();
+        console.log("월별 운전 데이터 로드 완료, 이벤트 데이터 로딩 시작");
+        await fetchEventsByReason();
+        console.log("이벤트 데이터 로드 완료, 사용자 트렌드 로딩 시작");
+        await fetchUserTrends();
+        console.log("모든 데이터 로드 완료");
+      } catch (error) {
+        console.error("데이터 로딩 중 오류 발생:", error);
+      }
+    };
+    
+    loadData();
   }, [fetchDashboardSummary, fetchMonthlyDrives, fetchEventsByReason, fetchUserTrends]);
 
   // 사용자 중점 메트릭 데이터

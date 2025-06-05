@@ -1,104 +1,106 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import https from 'https';
-
-// API 서버 주소
-const API_HOST = 'modive.site';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // path 매개변수 추출
+    // 1. 요청 경로 추출
     const { path } = req.query;
     const apiPath = Array.isArray(path) ? path.join('/') : path;
+    const apiUrl = `http://modive.site/${apiPath}`;
     
-    // 요청 URL 구성
-    const apiUrl = `https://${API_HOST}/${apiPath}${
-      Object.keys(req.query).length > 1 ? '?' + new URLSearchParams(
-        Object.fromEntries(
-          Object.entries(req.query).filter(([key]) => key !== 'path')
-        )
-      ).toString() : ''
-    }`;
-
-    console.log(`프록시 요청: ${req.method} ${apiUrl}`);
-
-    // 요청 헤더 설정
-    const headers: Record<string, string> = {};
+    console.log(`프록시 요청: ${apiUrl}`);
+    console.log('요청 메서드:', req.method);
+    console.log('요청 헤더:', {
+      authorization: req.headers.authorization ? '토큰 있음' : '토큰 없음',
+      xUserId: req.headers['x-user-id']
+    });
+    
+    // 2. 헤더 설정
+    const headers: HeadersInit = {
+      'Accept': '*/*',
+      'Accept-Encoding': 'gzip, deflate',
+      'Connection': 'keep-alive',
+      'User-Agent': 'PostmanRuntime/7.44.0',
+    };
+    
+    // Content-Type은 GET이 아닐 때만 설정
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      headers['Content-Type'] = 'application/json';
+    }
     
     // Authorization 헤더 전달
     if (req.headers.authorization) {
       headers['Authorization'] = req.headers.authorization;
+      console.log('인증 토큰이 전달되었습니다.');
     }
     
-    // 커스텀 헤더 전달 (예: X-User-Id)
-    if (req.headers['x-user-id']) {
-      headers['X-User-Id'] = req.headers['x-user-id'] as string;
-    }
+    // x-user-id 헤더 설정
+    headers['x-user-id'] = (req.headers['x-user-id'] as string) || '1';
     
-    // Content-Type 설정
-    headers['Content-Type'] = 'application/json';
+    console.log('API 요청 헤더:', headers);
     
-    // URL 파싱
-    const urlObj = new URL(apiUrl);
-
-    // 요청 옵션 구성
-    const options = {
-      hostname: urlObj.hostname,
-      port: 443, // HTTPS 기본 포트
-      path: `${urlObj.pathname}${urlObj.search}`,
-      method: req.method,
-      headers
-    };
-
-    // 외부 API 서버에 요청 전송
-    const apiResponse = await new Promise<Buffer>((resolve, reject) => {
-      const apiReq = https.request(options, (apiRes) => {
-        // 응답 상태 코드와 헤더 설정
-        res.statusCode = apiRes.statusCode || 500;
+    // 3. API 요청 수행
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5초 타임아웃
+      
+      const response = await fetch(apiUrl, {
+        method: req.method || 'GET',
+        headers,
+        signal: controller.signal,
+        body: req.method !== 'GET' && req.method !== 'HEAD' && req.body 
+          ? JSON.stringify(req.body) 
+          : undefined,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      // 응답 로깅
+      console.log(`API 응답 상태: ${response.status} ${response.statusText}`);
+      
+      // 4. 응답 데이터 처리
+      const text = await response.text();
+      console.log('API 응답 텍스트:', text.substring(0, 200));
+      
+      // 오류 응답이면 상세 정보 로깅 및 Mock 데이터 제안
+      if (!response.ok) {
+        console.error(`API 오류 응답: ${response.status} - ${text}`);
         
-        // 응답 헤더 복사 (필요한 헤더만)
-        if (apiRes.headers['content-type']) {
-          res.setHeader('Content-Type', apiRes.headers['content-type']);
-        }
-
-        // 응답 데이터 수집
-        const chunks: Buffer[] = [];
-        apiRes.on('data', (chunk) => chunks.push(chunk));
-        apiRes.on('end', () => {
-          const responseBody = Buffer.concat(chunks);
-          resolve(responseBody);
+        // 클라이언트에게 더 유용한 정보 제공
+        return res.status(500).json({
+          error: 'External API Error',
+          status: response.status,
+          message: 'API 서버에서 오류가 발생했습니다. Mock 데이터 사용을 권장합니다.',
+          originalResponse: text.substring(0, 500)
         });
-      });
-
-      // 오류 처리
-      apiReq.on('error', (error) => {
-        console.error('API 프록시 오류:', error);
-        reject(error);
-      });
-
-      // 요청 본문 전송 (있는 경우)
-      if (req.body && ['POST', 'PUT', 'PATCH'].includes(req.method || '')) {
-        apiReq.write(JSON.stringify(req.body));
       }
-
-      apiReq.end();
-    });
-
-    // 응답 전송
-    return res.send(apiResponse);
+      
+      // 5. 응답 처리
+      try {
+        // JSON 파싱 시도
+        const data = JSON.parse(text);
+        return res.status(response.status).json(data);
+      } catch (parseError) {
+        // JSON 파싱 실패시 텍스트 그대로 반환
+        return res.status(response.status).send(text);
+      }
+      
+    } catch (fetchError) {
+      // fetch 자체 오류 (타임아웃, 네트워크 문제 등)
+      console.error('API 요청 중 오류:', fetchError.message);
+      return res.status(500).json({
+        error: 'API Request Failed',
+        message: fetchError.message,
+        suggestion: 'Mock 데이터를 사용하세요.'
+      });
+    }
     
   } catch (error) {
-    console.error('프록시 처리 중 오류 발생:', error);
+    // 프록시 자체 오류
+    console.error('프록시 처리 오류:', error);
     return res.status(500).json({ 
-      status: 500,
-      message: '내부 서버 오류',
-      error: (error as Error).message 
+      error: 'Proxy Handler Error',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
-
-// API 요청 처리를 위해 body 파싱 구성
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};

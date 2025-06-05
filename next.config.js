@@ -4,8 +4,9 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: 'https://modive.site/:path*',
+        source: '/api/modive/:path*',
+        destination: 'http://modive.site/:path*',
+        // headers 필드는 여기에 직접 설정할 수 없습니다
       },
     ];
   },
