@@ -154,22 +154,86 @@ class UserService {
   // 사용자 탈퇴 처리
   async deleteUser(userId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        },
-      });
+      const url = `${this.baseUrl}/admin/users/${userId}/delete`;
+      console.log(`요청 URL: ${url}`);
       
-      if (!response.ok) {
-        throw new Error(`API 오류: ${response.status} ${response.statusText}`);
+      // 인증 토큰 상태 확인 및 로깅
+      const token = authService.getToken();
+      if (!token) {
+        console.error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+        throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
       }
       
-      const data = await response.json();
-      return data;
+      // 요청 헤더 로깅
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+      console.log('요청 헤더:', headers);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: headers
+      });
+      
+      // 에러 응답 처리 개선
+      if (!response.ok) {
+        // 응답 본문 확인 시도
+        let errorMessage = '';
+        try {
+          const errorBody = await response.text();
+          console.error('에러 응답 본문:', errorBody);
+          
+          try {
+            const errorJson = JSON.parse(errorBody);
+            errorMessage = errorJson.message || '';
+          } catch (e) {
+            errorMessage = errorBody;
+          }
+        } catch (e) {
+          console.error('에러 응답을 읽을 수 없음');
+        }
+        
+        // 오류 유형별 메시지
+        if (response.status === 403) {
+          throw new Error(`권한이 부족합니다. 관리자 권한이 필요합니다. ${errorMessage}`);
+        } else if (response.status === 500) {
+          throw new Error(`서버 내부 오류가 발생했습니다. ${errorMessage}`);
+        } else {
+          throw new Error(`API 오류: ${response.status} ${response.statusText} ${errorMessage}`);
+        }
+      }
+      
+      // 성공 응답 처리
+      console.log('탈퇴 처리 성공 응답:', response.status);
+      
+      // 응답 본문이 있는지 확인 (content-length 헤더)
+      const contentLength = response.headers.get('content-length');
+      const contentType = response.headers.get('content-type');
+      
+      // 응답 본문이 없거나 JSON이 아닌 경우
+      if (!contentLength || parseInt(contentLength) === 0 || !contentType || !contentType.includes('application/json')) {
+        console.log('빈 응답 또는 JSON이 아닌 응답을 받았습니다. 성공으로 처리합니다.');
+        return {
+          status: 200,
+          message: '사용자 비활성화 처리가 완료되었습니다.'
+        };
+      }
+      
+      // JSON 응답인 경우 파싱 시도
+      try {
+        const data = await response.json();
+        console.log('탈퇴 처리 성공:', data);
+        return data;
+      } catch (jsonError) {
+        console.log('JSON 파싱 실패, 성공 응답으로 처리:', jsonError);
+        return {
+          status: 200,
+          message: '사용자 비활성화 처리가 완료되었습니다.'
+        };
+      }
     } catch (error) {
-      console.error("사용자 탈퇴 처리 실패:", error);
+      console.error("사용자 탈퇴 처리 중 오류:", error);
       throw error;
     }
   }

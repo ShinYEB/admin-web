@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { User, UserDetail, DrivingRecord, SeedRecord, FilterParams } from '@/types/user';
 import { userService } from '@/services/userService';
+import { toast } from 'react-toastify';
 
 interface UserState {
   // 사용자 목록 상태
@@ -214,12 +215,49 @@ const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
+  // 사용자 탈퇴 함수
   deleteUser: async (userId: string) => {
     try {
-      await userService.deleteUser(userId);
+      set({ isDeletingUser: true, deleteUserError: null });
+      
+      // userService를 통해 API 호출
+      const response = await userService.deleteUser(userId);
+      
+      // 성공 시 사용자 목록에서 해당 사용자 제거
+      set((state) => ({
+        users: state.users.filter(user => user.userId !== userId),
+        isDeletingUser: false
+      }));
+      
+      // 탈퇴 처리된 사용자가 선택된 사용자였다면 선택 해제
+      set((state) => {
+        if (state.selectedUser?.userId === userId) {
+          return { selectedUser: null };
+        }
+        return {};
+      });
+      
+      console.log('사용자 탈퇴 처리 완료:', response);
+      
+      // 성공 시 필요한 경우 toast 메시지 표시
+      if (typeof window !== 'undefined' && window.alert) {
+        alert('사용자가 성공적으로 탈퇴 처리되었습니다.');
+      }
+      
+      return response;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '사용자 탈퇴에 실패했습니다.';
-      set({ error: errorMessage });
+      console.error('사용자 탈퇴 처리 실패:', error);
+      
+      set({ 
+        deleteUserError: error.message || '사용자 탈퇴 처리 중 오류가 발생했습니다', 
+        isDeletingUser: false 
+      });
+      
+      // 에러 시 필요한 경우 alert 표시
+      if (typeof window !== 'undefined' && window.alert) {
+        alert(`탈퇴 처리 실패: ${error.message || '알 수 없는 오류가 발생했습니다'}`);
+      }
+      
       throw error;
     }
   },

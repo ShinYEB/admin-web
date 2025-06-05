@@ -17,6 +17,9 @@ export default function UsersPage() {
     pageSize,
     isLoading,
     error,
+    drivingRecords,
+    seedRecords,
+    isUserDetailLoading,
   } = useUsers();
 
   const {
@@ -40,6 +43,8 @@ export default function UsersPage() {
   const [minExperience, setMinExperience] = useState("");
   const [maxExperience, setMaxExperience] = useState("");
   const [accountAgeInMonths, setAccountAgeInMonths] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null); // 상태 추가
+  const [isDeleteProcessing, setIsDeleteProcessing] = useState(false); // 삭제 처리 상태 추가
 
   // 컴포넌트 마운트 시 사용자 목록 로드
   useEffect(() => {
@@ -110,9 +115,15 @@ export default function UsersPage() {
         return;
       }
 
+      // 선택된 사용자 정보 저장
+      setSelectedUser(user);
+
+      // API 호출
       await fetchUserDetail(user.userId);
       await fetchUserDrives(user.userId);
       await fetchUserRewards(user.userId);
+
+      // 모달 열기
       setIsDetailModalOpen(true);
     } catch (error) {
       console.error("사용자 상세 정보 로드 실패:", error);
@@ -125,18 +136,50 @@ export default function UsersPage() {
     setIsDeleteModalOpen(true);
   };
 
-  // 사용자 탈퇴 처리
+  // 탈퇴 처리 핸들러 수정
+  const handleDeleteUser = (user) => {
+    if (!user) return;
+
+    // 모달 상태 변경
+    setIsDetailModalOpen(false);
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  // 탈퇴 확인 핸들러 개선
   const handleConfirmDelete = async () => {
+    if (!userToDelete || !userToDelete.userId) return;
+
     try {
-      if (userToDelete && userToDelete.userId) {
-        await deleteUser(userToDelete.userId);
-        setIsDeleteModalOpen(false);
-        setUserToDelete(null);
-        // 현재 페이지 다시 로드
-        fetchUsers({ page: currentPage, pageSize });
-      }
+      setIsDeleteProcessing(true);
+
+      // 사용자 탈퇴 API 호출
+      await deleteUser(userToDelete.userId);
+
+      // 성공 처리
+      alert('사용자가 성공적으로 탈퇴 처리되었습니다.');
+      
+      // 모달 닫기
+      setIsDeleteModalOpen(false);
+      setUserToDelete(null);
+
+      // 현재 페이지 다시 로드
+      fetchUsers({ page: currentPage, pageSize });
     } catch (error) {
       console.error("사용자 탈퇴 처리 중 오류:", error);
+      
+      // 사용자에게 오류 메시지 표시
+      alert(`오류 발생: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+      
+      // 403 오류(권한 부족)인 경우 로그인 화면으로 리디렉션
+      if (error.message.includes('권한') || error.message.includes('403')) {
+        if (confirm('세션이 만료되었거나 권한이 부족합니다. 로그인 화면으로 이동하시겠습니까?')) {
+          authService.logout();
+          router.push('/auth/login');
+        }
+      }
+    } finally {
+      setIsDeleteProcessing(false);
     }
   };
 
@@ -211,6 +254,11 @@ export default function UsersPage() {
       <UserDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
+        user={selectedUser}
+        drivingRecords={drivingRecords || []} // userStore 대신 위에서 가져온 값 사용
+        seedRecords={seedRecords || []} // userStore 대신 위에서 가져온 값 사용
+        isLoading={isUserDetailLoading} // userStore 대신 위에서 가져온 값 사용
+        onDeleteUser={handleDeleteUser} // 이 함수를 반드시 전달해야 함
       />
 
       {/* 사용자 탈퇴 모달 */}
