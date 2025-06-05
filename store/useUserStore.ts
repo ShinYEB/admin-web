@@ -1,7 +1,7 @@
 // store/userStore.ts
 import { create } from 'zustand';
 import { User, UserDetail, DrivingRecord, SeedRecord, FilterParams } from '@/types/user';
-import { userService } from '@/pages/api/userService';
+import { userService } from '@/services/userService';
 
 interface UserState {
   // 사용자 목록 상태
@@ -74,34 +74,41 @@ const useUserStore = create<UserState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const finalParams = params || state.currentFilters;
+      // pageSize가 없으면 기본값 설정
+      const pageSize = params?.pageSize || 10;
       
-      console.log('API 호출 파라미터:', finalParams);
-
-      const response = await userService.getUsersWithDriveCount(finalParams);
+      // 수정된 파라미터 
+      const queryParams = {
+        page: params?.page,
+        pageSize: pageSize,
+      };
       
-      console.log('API 응답:', response);
-
-      set({
-        users: response.content,
-        totalPages: response.totalPages,
-        totalElements: response.totalElements,
-        currentPage: response.number,
-        pageSize: response.size,
-        currentFilters: finalParams,
-        isLoading: false,
-        error: null,
-      });
+      console.log("API 호출 파라미터:", queryParams);
       
-      console.log('스토어 업데이트 완료 - 페이지 크기:', response.size, '현재 페이지:', response.number);
+      const response = await userService.getUsersWithDriveCount(queryParams);
+      console.log("API 응답:", response);
+      
+      if (response?.data?.filterResult) {
+        const { content, totalPages, totalElements, size, number } = response.data.filterResult;
+        
+        set({
+          users: content || [],
+          totalPages,
+          totalElements,
+          pageSize: size || pageSize, // API 응답의 size 또는 요청한 pageSize 사용
+          currentPage: number || params?.page,
+          isLoading: false
+        });
+        
+        console.log(`스토어 업데이트 완료 - 페이지 크기: ${size} 현재 페이지: ${number}`);
+      } else {
+        throw new Error("API 응답 형식이 잘못되었습니다.");
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '사용자 목록 조회에 실패했습니다.';
-      set({
-        users: [],
-        totalPages: 0,
-        totalElements: 0,
-        isLoading: false,
-        error: errorMessage,
+      console.error("사용자 목록 로딩 중 오류:", error);
+      set({ 
+        error: error.message || "사용자 데이터를 불러오는데 실패했습니다", 
+        isLoading: false 
       });
     }
   },

@@ -9,7 +9,8 @@ import {
   ChartPieIcon,
   ArrowLeftOnRectangleIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '@/services/authService';
 
@@ -21,11 +22,23 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, title = 'Modive 관리자' }) => {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // 로그아웃 처리
-  const handleLogout = () => {
+  // 로그아웃 버튼 클릭 핸들러 - 모달 표시
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+  
+  // 로그아웃 확인 시 실행
+  const confirmLogout = () => {
     authService.logout();
+    setShowLogoutModal(false);
     router.push('/auth/login');
+  };
+  
+  // 로그아웃 취소
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const navigation = [
@@ -97,14 +110,14 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Modive 관리자' })
             })}
           </nav>
           
-          {/* 빈 공간 자동 확장 */}
-          <div className="flex-grow"></div>
-
-          {/* 토글 버튼 - 고정 높이 */}
-          <div className={`px-2 py-2 flex ${collapsed ? 'justify-center' : 'justify-end'} flex-shrink-0`}>
+          {/* 빈 공간 상단 부분 */}
+          <div className="flex-grow flex-1"></div>
+          
+          {/* 토글 버튼 - 오른쪽 배치 */}
+          <div className={`flex ${collapsed ? 'justify-center' : 'justify-end pr-2'} my-4 flex-shrink-0`}>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100"
+              className="p-2 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200"
               title={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
             >
               {collapsed ? (
@@ -114,11 +127,14 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Modive 관리자' })
               )}
             </button>
           </div>
+          
+          {/* 빈 공간 하단 부분 */}
+          <div className="flex-grow flex-1"></div>
 
           {/* 로그아웃 버튼 - 고정 높이 */}
           <div className={`border-t border-gray-200 p-2 ${collapsed ? 'flex justify-center' : ''} flex-shrink-0 mb-4`}>
             <button
-              onClick={handleLogout}
+              onClick={handleLogoutClick} // 로그아웃 직접 실행이 아닌 모달 표시
               className={`flex items-center ${
                 collapsed ? 'justify-center p-3' : 'w-full px-4 py-3'
               } text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 transition-colors`}
@@ -135,6 +151,38 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Modive 관리자' })
           {children}
         </main>
       </div>
+      
+      {/* 로그아웃 확인 모달 */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">로그아웃</h3>
+              <button 
+                onClick={cancelLogout}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-gray-600 mb-6">정말 로그아웃하시겠습니까?</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelLogout}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              >
+                취소
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+              >
+                로그아웃
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
