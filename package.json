@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "jest",
     "type-check": "tsc --noEmit",
     "build-css": "tailwindcss -i ./styles/globals.css -o ./public/output.css --watch"
   },
