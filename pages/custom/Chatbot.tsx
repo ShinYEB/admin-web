@@ -6,7 +6,7 @@ const Chatbot = () => {
     const [messages, setMessages] = useState([
         {
             id: 1,
-            text: "안녕하세요! MODIVE AI 어시스턴트입니다. 운적 관리, 회원 정보 조회, 데이터 분석 등 다양한 업무를 도와드릴 수 있습니다. 무엇을 도와드릴까요?",
+            text: "안녕하세요! MODIVE AI 어시스턴트입니다. 회원 정보 조회, 데이터 분석 등 다양한 업무를 도와드릴 수 있습니다. 무엇을 도와드릴까요?",
             sender: 'ai',
             timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
         }
@@ -14,6 +14,8 @@ const Chatbot = () => {
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef(null);
+
+    const [apiResponse, setApiResponse] = useState('');
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -23,7 +25,7 @@ const Chatbot = () => {
         scrollToBottom();
     }, [messages]);
 
-    const simulateTyping = () => {
+    const agentRequest = () => {
         setIsTyping(true);
         return new Promise((resolve) => {
             setTimeout(() => {
@@ -31,48 +33,6 @@ const Chatbot = () => {
                 resolve();
             }, 800 + Math.random() * 1500);
         });
-    };
-
-    const generateAIResponse = (userMessage) => {
-        const lowerMessage = userMessage.toLowerCase();
-
-        if (lowerMessage.includes('운적') || lowerMessage.includes('포인트')) {
-            return "운적 관리 관련 문의시군요. 현재 시스템에서 운적 점수 조회, 적립 내역 확인, 등급별 혜택 안내 등을 도와드릴 수 있습니다. 구체적으로 어떤 부분이 궁금하신가요?";
-        }
-
-        if (lowerMessage.includes('회원') || lowerMessage.includes('고객')) {
-            return "회원 관리 기능을 안내해드리겠습니다. 회원 정보 조회, 등급 변경, 활동 내역 분석 등이 가능합니다. 특정 회원 ID나 이메일을 알려주시면 더 자세한 정보를 제공해드릴 수 있습니다.";
-        }
-
-        if (lowerMessage.includes('분석') || lowerMessage.includes('통계') || lowerMessage.includes('데이터')) {
-            return "데이터 분석 서비스를 제공해드리겠습니다. 현재 가능한 분석: 회원 활동 통계, 운적 적립 패턴, 등급별 분포도, 월별 트렌드 등이 있습니다. 어떤 분석이 필요하신지 구체적으로 말씀해주세요.";
-        }
-
-        if (lowerMessage.includes('도움') || lowerMessage.includes('기능')) {
-            return `MODIVE AI 어시스턴트의 주요 기능을 안내해드리겠습니다:
-
-                    📊 **데이터 분석**: 회원 통계, 운적 패턴 분석
-                    👥 **회원 관리**: 정보 조회, 등급 관리, 활동 추적  
-                    🎯 **운적 시스템**: 포인트 조회, 적립 내역, 등급 혜택
-                    📈 **리포트 생성**: 맞춤형 보고서 작성
-                    🔍 **검색 기능**: 통합 데이터 검색
-                    
-                    구체적인 업무나 질문이 있으시면 언제든 말씀해주세요!`;
-        }
-
-        if (lowerMessage.includes('안녕') || lowerMessage.includes('hello')) {
-            return "안녕하세요! 반갑습니다. MODIVE 시스템과 관련하여 궁금한 점이나 도움이 필요한 업무가 있으시면 언제든 말씀해주세요.";
-        }
-
-        const responses = [
-            "네, 말씀하신 내용을 확인했습니다. 더 구체적인 정보를 알려주시면 정확한 도움을 드릴 수 있습니다.",
-            "MODIVE 시스템에서 해당 기능을 찾아보겠습니다. 잠시만 기다려주세요.",
-            "좋은 질문이네요! 관련 데이터를 분석해서 최적의 답변을 준비해드리겠습니다.",
-            "해당 요청사항을 처리하겠습니다. 추가로 필요한 정보가 있다면 알려주세요.",
-            "MODIVE AI가 분석한 결과를 바탕으로 답변드리겠습니다. 구체적인 조건이나 필터가 있으시면 말씀해주세요."
-        ];
-
-        return responses[Math.floor(Math.random() * responses.length)];
     };
 
     const handleSendMessage = async () => {
@@ -89,11 +49,12 @@ const Chatbot = () => {
         const currentInput = inputValue;
         setInputValue('');
 
-        await simulateTyping();
+        {/* 여기에 API 구현*/}
+        await agentRequest();
 
         const aiMessage = {
             id: messages.length + 2,
-            text: generateAIResponse(currentInput),
+            text: "AI RESPONSE",
             sender: 'ai',
             timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
         };
@@ -173,9 +134,9 @@ const Chatbot = () => {
                         >
                             <Download className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Settings className="w-4 h-4" />
-                        </button>
+                        {/*<button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">*/}
+                        {/*    <Settings className="w-4 h-4" />*/}
+                        {/*</button>*/}
                     </div>
                 </div>
             </div>
