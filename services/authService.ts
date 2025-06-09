@@ -146,9 +146,7 @@ class AuthService {
     const token = this.getToken();
     return token ? {
       'Authorization': `Bearer ${token}`,
-      'x-user-id': '1'
     } : {
-      'x-user-id': '1'
     };
   }
 }

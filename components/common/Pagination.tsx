@@ -7,7 +7,6 @@ interface PaginationProps {
   totalElements?: number; // 옵셔널로 변경
   pageSize: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange?: (size: number) => void; // 추가
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -16,7 +15,6 @@ const Pagination: React.FC<PaginationProps> = ({
   totalElements = 0, // 기본값 추가
   pageSize,
   onPageChange,
-  onPageSizeChange,
 }) => {
   if (totalPages <= 1) return null;
 
@@ -35,19 +33,6 @@ const Pagination: React.FC<PaginationProps> = ({
       </div>
 
       <div className="flex items-center justify-center">
-        {/* 페이지 크기 선택 (옵션) */}
-        {onPageSizeChange && (
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="mr-4 py-1 px-2 text-sm border rounded"
-          >
-            <option value={10}>10개씩</option>
-            <option value={20}>20개씩</option>
-            <option value={50}>50개씩</option>
-          </select>
-        )}
-        
         <div className="flex items-center space-x-1">
           <button
             onClick={() => onPageChange(currentPage - 1)}
