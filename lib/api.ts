@@ -232,15 +232,12 @@ export async function fetchApi<T>(endpoint: string, options: FetchOptions = {}):
     
     console.log('요청 URL:', apiUrl);
     
-    // 기본 헤더
-    const headers: Record<string, string> = {
+    // 인증 헤더를 명시적으로 추가
+    const headers = {
       'Content-Type': 'application/json',
-      ...options.customHeaders
+      ...authService.getAuthHeaders(), // 인증 헤더 추가
+      ...(options.customHeaders || {})
     };
-    
-    // 인증 서비스에서 인증 헤더 가져오기
-    const authHeaders = authService.getAuthHeaders();
-    Object.assign(headers, authHeaders);
     
     console.log('요청 헤더:', headers);
     

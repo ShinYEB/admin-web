@@ -13,6 +13,7 @@ import {
   UCFilterUserResData,
 } from '@/types/user';
 import { fetchApi } from '@/lib/api';
+import { authService } from '@/services/authService'; 
 
 class UserService {
   // 백엔드 UserListItem을 프론트엔드 User 타입으로 변환
@@ -39,6 +40,12 @@ class UserService {
       driveCount: item.driveCount,
       isActive: item.isActive,
     };
+  }
+
+  // 모든 API 엔드포인트 앞에 /api를 추가하는 헬퍼 함수
+  private getApiEndpoint(path: string): string {
+    // 이미 /api로 시작하면 그대로 반환, 아니면 /api를 추가
+    return path.startsWith('/api/') ? path : `/api${path}`;
   }
 
   // 사용자 목록 조회 (필터링 포함) - 통합 메서드
@@ -170,12 +177,17 @@ class UserService {
   }
 
   // 사용자 탈퇴
-  async deleteUser(userId: string): Promise<void> {
+  async deleteUser(userId: string) {
     try {
+      // 상대 경로 사용 - Next.js API 라우트를 통해 프록시됨
       const endpoint = `/admin/users/${userId}/delete`;
+      console.log(`회원 탈퇴 요청 URL: ${endpoint}`);
       
       await fetchApi<CommonRes<any>>(endpoint, {
         method: 'POST',
+        customHeaders: {
+          ...authService.getAuthHeaders()
+        }
       });
       
       console.log(`사용자 탈퇴 성공 (userId: ${userId})`);

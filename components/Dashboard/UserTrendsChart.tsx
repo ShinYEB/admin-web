@@ -30,6 +30,9 @@ interface UserTrendsChartProps {
 }
 
 export const UserTrendsChart: React.FC<UserTrendsChartProps> = ({ data }) => {
+  console.log('UserTrendsChart - Received data:', data); // 디버깅용 로그
+  
+  // 데이터 검증 - 배열이 비어있을 때만 체크
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -40,7 +43,6 @@ export const UserTrendsChart: React.FC<UserTrendsChartProps> = ({ data }) => {
 
   // 데이터 가공
   const chartData = {
-    // 월 포맷팅 (yyyy-mm 형식)
     labels: data.map(item => `${item.year}-${item.month.toString().padStart(2, '0')}`),
     datasets: [
       {
@@ -83,30 +85,38 @@ export const UserTrendsChart: React.FC<UserTrendsChartProps> = ({ data }) => {
           padding: 20,
         },
       },
+      tooltip: {
+        intersect: false,
+        mode: 'index' as const,
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
-        grid: {
-          drawBorder: false,
-        },
+        min: 0,
+        suggestedMax: 5, // 최소 Y축 최대값 설정
         ticks: {
-          stepSize: 100,
+          precision: 0,
+          stepSize: 1,
+          // 값이 0이어도 표시
           callback: function(value: any) {
-            if (Number.isInteger(value)) {
-              return value.toLocaleString();
-            }
-            return null;
+            return value.toString();
           }
-        }
+        },
+        display: true,
       },
       x: {
         grid: {
           display: false,
         },
+        display: true,
       },
     },
   };
 
-  return <Line data={chartData} options={options} />;
+  return (
+    <div style={{ height: '350px', width: '100%' }}>
+      <Line data={chartData} options={options} />
+    </div>
+  );
 };
