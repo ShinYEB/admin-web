@@ -4,7 +4,7 @@ export interface User {
   userId: string;
   nickname: string;
   email: string;
-  experience: number;
+  experience: string; // 표시용 문자열 ("1년 미만", "2년 미만" 등)
   joinedAt: string;
   driveCount: number;
   isActive: number;
@@ -14,7 +14,7 @@ export interface UserDetail {
   userId: string;
   nickname: string;
   email: string;
-  experience: number;
+  experience: string; // 표시용 문자열 ("1년 미만", "2년 미만" 등)
   joinedAt: string;
   driveCount: number;
   isActive: number;

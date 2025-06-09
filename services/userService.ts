@@ -15,13 +15,19 @@ import {
 import { fetchApi } from '@/lib/api';
 
 class UserService {
+  // experience 값을 표시용 문자열로 변환
+  private getExperienceText(experience: number): string {
+    if (experience === 0) return '1년 미만';
+    return `${experience}년 이상`;
+  }
+
   // 백엔드 UserListItem을 프론트엔드 User 타입으로 변환
   private mapToUser(item: UserListItem): User {
     return {
       userId: item.userId,
       nickname: item.nickname,
       email: item.email,
-      experience: item.experience,
+      experience: this.getExperienceText(item.experience),
       joinedAt: item.joinedAt,
       driveCount: item.driveCount,
       isActive: item.isActive,
@@ -34,7 +40,7 @@ class UserService {
       userId: item.userId,
       nickname: item.nickname,
       email: item.email,
-      experience: item.experience,
+      experience: this.getExperienceText(item.experience),
       joinedAt: item.joinedAt,
       driveCount: item.driveCount,
       isActive: item.isActive,
