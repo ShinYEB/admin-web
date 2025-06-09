@@ -2,7 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Settings, RotateCcw, Download, MoreVertical } from 'lucide-react';
 import {className} from "postcss-selector-parser";
 
-const Chatbot = () => {
+type ChatbotProps = {
+    setComponents: (any) => void;
+}
+
+const Chatbot = (chatbotProps: ChatbotProps) => {
     const [messages, setMessages] = useState([
         {
             id: 1,
@@ -25,14 +29,97 @@ const Chatbot = () => {
         scrollToBottom();
     }, [messages]);
 
-    const agentRequest = () => {
+    const agentRequest = async () => {
         setIsTyping(true);
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                setIsTyping(false);
-                resolve();
-            }, 800 + Math.random() * 1500);
-        });
+
+        // 응답 데이터를 저장할 로컬 변수
+        let responseText = 'Agent 호출에 실패했습니다. 다시 시도해주세요.';
+
+        try {
+            let sessionId = sessionStorage.getItem("session_id");
+
+            if (sessionId === null) {
+                console.log("새 세션 생성 중...");
+                const newSessionResponse = await fetch('http://localhost:8000/agent/new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "userId": "userId"
+                    })
+                });
+
+                if (!newSessionResponse.ok) {
+                    throw new Error('새 세션 생성 실패');
+                }
+
+                const newSessionData = await newSessionResponse.json();
+                console.log("새 세션 데이터:", newSessionData);
+
+                sessionId = newSessionData.data;
+                sessionStorage.setItem("session_id", sessionId);
+            } else {
+                console.log("기존 세션 사용:", sessionId);
+            }
+
+            // 2단계: 채팅 요청
+            console.log("채팅 요청 전송 중...");
+            const chatResponse = await fetch('http://localhost:8000/agent/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    "prompt": inputValue,
+                    "session_id": sessionId
+                })
+            });
+
+            if (!chatResponse.ok) {
+                throw new Error(`채팅 요청 실패: ${chatResponse.status}`);
+            }
+
+            // 3단계: 응답 처리
+            const result = await chatResponse.json();
+            console.log("채팅 응답:", result);
+
+            // 4단계: 컴포넌트 설정 (조건부)
+            if (result.data.answer_type === "dashboard") {
+                console.log("대시보드 컴포넌트 설정 중...");
+                chatbotProps.setComponents(result.data.components);
+            }
+
+            // 5단계: 세션 ID 업데이트 (응답에서 새로운 세션 ID가 온 경우)
+            if (result.data.session_id) {
+                sessionStorage.setItem("session_id", result.data.session_id);
+            }
+
+            // 6단계: 최종 응답 설정
+            responseText = result.data.answer; // 로컬 변수에 저장
+            setApiResponse(responseText);
+            console.log("처리 완료");
+
+        } catch (error) {
+            console.error('Error:', error);
+            responseText = 'Agent 호출에 실패했습니다. 다시 시도해주세요.';
+            setApiResponse(responseText);
+        } finally {
+            setIsTyping(false);
+
+            // 이제 responseText는 정확한 값을 가집니다
+            const aiMessage = {
+                id: messages.length + 2,
+                text: responseText, // apiResponse 대신 responseText 사용
+                sender: 'ai',
+                timestamp: new Date().toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            };
+
+            setMessages(prev => [...prev, aiMessage]);
+        }
     };
 
     const handleSendMessage = async () => {
@@ -51,15 +138,6 @@ const Chatbot = () => {
 
         {/* 여기에 API 구현*/}
         await agentRequest();
-
-        const aiMessage = {
-            id: messages.length + 2,
-            text: "AI RESPONSE",
-            sender: 'ai',
-            timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-        };
-
-        setMessages(prev => [...prev, aiMessage]);
     };
 
     const handleKeyPress = (e) => {
@@ -70,6 +148,7 @@ const Chatbot = () => {
     };
 
     const handleClearChat = () => {
+        sessionStorage.removeItem('session_id');
         setMessages([
             {
                 id: 1,
@@ -103,9 +182,9 @@ const Chatbot = () => {
     ];
 
     return (
-        <div className="w-[600px] h-[1000px] bg-gray-50 flex flex-col mx-auto">
+        <div className="w-[100%] h-[90vh] bg-gray-50 flex flex-col mx-auto">
             {/* 상단 헤더 */}
-            <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
+            <div className="h-[70px] bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
