@@ -9,7 +9,7 @@ interface UserDetailModalProps {
   drivingRecords: DrivingRecord[];
   seedRecords: SeedRecord[];
   isLoading?: boolean;
-  onDeleteUser?: (user: UserDetail) => void; // 타입 수정: 올바른 매개변수 추가
+  onDeleteUser?: () => void;
 }
 
 const UserDetailModal: React.FC<UserDetailModalProps> = ({
@@ -212,28 +212,23 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({
           )}
 
           {/* 하단 버튼들 */}
-          <div className="mt-6 flex items-center space-x-3">
-            {/* 왼쪽 영역 - 탈퇴 버튼 */}
-            <div className="flex-grow">
-              {onDeleteUser && (
+          <div className="flex justify-between items-center mt-6 pt-4 border-t">
+            <div>
+              {user.isActive === 1 && onDeleteUser && (
                 <button
-                  onClick={() => onDeleteUser(user)}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  onClick={onDeleteUser}
+                  className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
                 >
                   회원 탈퇴
                 </button>
               )}
             </div>
-
-            {/* 오른쪽 영역 - 닫기 버튼 */}
-            <div>
-              <button
-                onClick={onClose}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-              >
-                닫기
-              </button>
-            </div>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-500 text-white text-sm rounded hover:bg-gray-600 transition-colors"
+            >
+              닫기
+            </button>
           </div>
         </div>
       </div>

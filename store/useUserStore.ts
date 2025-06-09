@@ -2,7 +2,6 @@
 import { create } from 'zustand';
 import { User, UserDetail, DrivingRecord, SeedRecord, FilterParams } from '@/types/user';
 import { userService } from '@/services/userService';
-import { toast } from 'react-toastify';
 
 interface UserState {
   // 사용자 목록 상태
@@ -269,7 +268,6 @@ const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
-  // 사용자 탈퇴 함수
   deleteUser: async (userId: string) => {
     try {
       await userService.deleteUser(userId);
@@ -278,18 +276,8 @@ const useUserStore = create<UserState>((set, get) => ({
       const state = get();
       await get().fetchUsers(state.currentFilters);
     } catch (error) {
-      console.error('사용자 탈퇴 처리 실패:', error);
-      
-      set({ 
-        deleteUserError: error.message || '사용자 탈퇴 처리 중 오류가 발생했습니다', 
-        isDeletingUser: false 
-      });
-      
-      // 에러 시 필요한 경우 alert 표시
-      if (typeof window !== 'undefined' && window.alert) {
-        alert(`탈퇴 처리 실패: ${error.message || '알 수 없는 오류가 발생했습니다'}`);
-      }
-      
+      const errorMessage = error instanceof Error ? error.message : '사용자 탈퇴에 실패했습니다.';
+      set({ error: errorMessage });
       throw error;
     }
   },

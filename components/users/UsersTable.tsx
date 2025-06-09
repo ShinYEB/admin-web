@@ -7,7 +7,7 @@ interface UsersTableProps {
   currentPage: number;
   pageSize: number;
   isLoading: boolean;
-  onUserDetail: (user: User) => void;
+  onViewUser: (user: User) => void;
 }
 
 const UsersTable: React.FC<UsersTableProps> = ({
@@ -15,7 +15,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
   currentPage,
   pageSize,
   isLoading,
-  onUserDetail,
+  onViewUser,
 }) => {
   if (isLoading) {
     return (
@@ -27,7 +27,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
     );
   }
 
-  if (!users || users.length === 0) {
+  if (users.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="text-center py-12">
@@ -38,13 +38,6 @@ const UsersTable: React.FC<UsersTableProps> = ({
       </div>
     );
   }
-
-  const safeRender = (value, suffix = '') => {
-    if (value === null || value === undefined || Number.isNaN(value)) {
-      return '-';
-    }
-    return `${value}${suffix}`;
-  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -77,18 +70,18 @@ const UsersTable: React.FC<UsersTableProps> = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {users.map((user, index) => (
-              <tr key={user.userId || index} className="hover:bg-gray-50">
+              <tr key={user.userId} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {currentPage != null && pageSize != null ? (currentPage * pageSize + index + 1) : index + 1}
+                  {currentPage * pageSize + index + 1}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.email || '-'}
+                  {user.email}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.nickname || '-'}
+                  {user.nickname}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.joinedAt ? user.joinedAt.split("T")[0] : '-'}
+                  {user.joinedAt.split("T")[0]}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.experience}
@@ -106,7 +99,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <button
-                    onClick={() => onUserDetail(user)}
+                    onClick={() => onViewUser(user)}
                     disabled={isLoading}
                     className="text-blue-600 hover:text-blue-800 text-sm disabled:opacity-50"
                   >
