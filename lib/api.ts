@@ -225,19 +225,30 @@ export async function fetchApi<T>(endpoint: string, options: FetchOptions = {}):
   }
 
   try {
-    // API URL 구성
-    const apiUrl = endpoint.startsWith('http') 
-      ? endpoint 
-      : `/api/modive/${endpoint.startsWith('/') ? endpoint.substring(1) : endpoint}`;
+    // API URL 구성 - 탈퇴만 프록시 사용
+    let apiUrl: string;
+    
+    if (endpoint.startsWith('http')) {
+      apiUrl = endpoint;
+    } else if (endpoint.includes('/delete')) {
+      // 탈퇴 요청만 프록시 사용
+      apiUrl = `/api/proxy/${endpoint.startsWith('/') ? endpoint.substring(1) : endpoint}`;
+    } else {
+      // 나머지는 기존 rewrite 사용
+      apiUrl = `/api/modive/${endpoint.startsWith('/') ? endpoint.substring(1) : endpoint}`;
+    }
     
     console.log('요청 URL:', apiUrl);
     
-    // 인증 헤더를 명시적으로 추가
-    const headers = {
+    // 기본 헤더
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...authService.getAuthHeaders(), // 인증 헤더 추가
-      ...(options.customHeaders || {})
+      ...options.customHeaders
     };
+    
+    // 인증 서비스에서 인증 헤더 가져오기
+    const authHeaders = authService.getAuthHeaders();
+    Object.assign(headers, authHeaders);
     
     console.log('요청 헤더:', headers);
     

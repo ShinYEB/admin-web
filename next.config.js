@@ -4,7 +4,7 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
+        source: '/api/modive/:path*',
         destination: 'http://modive.site/:path*',
       },
     ];
