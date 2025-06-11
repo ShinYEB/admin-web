@@ -191,18 +191,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* Footer */}
-            <div className="mt-8 text-center">
-              <p className="text-gray-500 text-sm">
-                계정이 없으신가요?{" "}
-                <Link
-                  href="/auth/register"
-                  className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
-                >
-                  회원가입
-                </Link>
-              </p>
-            </div>
+
           </div>
 
           {/* Bottom decoration */}

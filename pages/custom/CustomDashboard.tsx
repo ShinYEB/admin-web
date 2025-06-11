@@ -4,7 +4,7 @@ import {
     DailyStatsChart,
     ScoreDistributionChart,
 } from '@/components/Dashboard/Charts'
-import {Card} from "@/components/UI/Card";
+import Card from "@/components/UI/Card";
 import {EventsByReasonChart} from "@/components/Dashboard/EventsByReasonChart";
 import {MonthlyDrivesChart} from "@/components/Dashboard/MonthlyDrivesChart";
 import {UserTrendsChart} from "@/components/Dashboard/UserTrendsChart";

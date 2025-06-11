@@ -80,5 +80,9 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
     },
   };
 
-  return <Bar data={chartData} options={options} />;
+  return (
+    <div className="h-64 w-full"> 
+      <Bar data={chartData} options={options} />
+    </div>
+  );
 };
