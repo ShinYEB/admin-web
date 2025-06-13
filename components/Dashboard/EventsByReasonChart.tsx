@@ -88,3 +88,11 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
         </div>
     );
 };
+
+// EventByReason 인터페이스 업데이트
+interface EventByReason {
+  reason?: string;
+  count?: number;
+  type?: string;  // 타입 속성 추가
+  frequency?: number;
+}
