@@ -13,7 +13,7 @@
     "build-css": "tailwindcss -i ./styles/globals.css -o ./public/output.css --watch",
     "export": "next build && next export -o build",
     "export:skipTypes": "DISABLE_ESLINT_PLUGIN=true NEXT_DISABLE_TYPES=1 next build && next export -o build",
-    "build-skip-ts": "next build --no-lint && next export -o build"
+    "build-skip-ts": "NEXT_TYPESCRIPT_COMPILE_ONLY=false next build --no-lint && next export -o build"
   },
   "keywords": [],
   "author": "",

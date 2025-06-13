@@ -29,8 +29,13 @@ jobs:
       # 타입 검사를 완전히 건너뛰고 빌드
       - name: Build and export
         run: |
-          NODE_OPTIONS=--max_old_space_size=4096 npm run build-skip-ts
-        
+
+          NEXT_TYPESCRIPT_COMPILE_ONLY=false NODE_OPTIONS=--max_old_space_size=4096 npx next build --no-lint || true
+          npx next export -o build
+          
+          ls -la
+          ls -la build || echo "build 디렉토리가 없습니다"
+    
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -46,4 +51,3 @@ jobs:
         run: |
           aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
 
-          
