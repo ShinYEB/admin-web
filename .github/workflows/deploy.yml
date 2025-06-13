@@ -20,11 +20,9 @@ jobs:
           cache: 'npm'
           
       - name: Install dependencies
-        working-directory: ./admin-web
         run: npm ci
         
       - name: Build and export
-        working-directory: ./admin-web
         run: npm run build
         
       - name: Configure AWS credentials
