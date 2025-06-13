@@ -6,10 +6,10 @@ import {
     BarElement,
     Title,
     Tooltip,
-    Legend,
+    Legend
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { EventByReason } from '@/types/eventsByReason';
+import { EventByReason } from '@/types/eventsByReason';  // 이 임포트를 유지합니다
 import Card from '../UI/Card';
 
 // Chart.js 등록
@@ -88,11 +88,3 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
         </div>
     );
 };
-
-// EventByReason 인터페이스 업데이트
-interface EventByReason {
-  reason?: string;
-  count?: number;
-  type?: string;  // 타입 속성 추가
-  frequency?: number;
-}
