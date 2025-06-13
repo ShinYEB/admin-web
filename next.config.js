@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
-  images: {
-    domains: ['localhost'],
+  async rewrites() {
+    return [
+      {
+        source: '/api/modive/:path*',
+        destination: 'http://modive.site/:path*',
+      },
+    ];
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
