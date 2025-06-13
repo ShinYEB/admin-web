@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Settings, RotateCcw, Download, MoreVertical } from 'lucide-react';
 import {className} from "postcss-selector-parser";
+import {authService} from "@/services/authService";
 
 type ChatbotProps = {
     setComponents: (any) => void;
@@ -67,6 +68,7 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': authService.getAuthHeaders()['Authorization']
                     },
                     body: JSON.stringify({
                         "userId": "userId"
@@ -92,6 +94,7 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': authService.getAuthHeaders()['Authorization']
                 },
                 body: JSON.stringify({
                     "prompt": inputValue,
