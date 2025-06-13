@@ -43,12 +43,20 @@ jobs:
           module.exports = nextConfig;
           EOF
           
-          # tsconfig.build.json 생성 (최소 설정)
-          echo '{"compilerOptions":{"baseUrl":".","noEmit":false},"include":["next-env.d.ts"]}' > tsconfig.build.json
+          # Copy main tsconfig.json and modify it as tsconfig.build.json
+          cp tsconfig.json tsconfig.build.json
           
+          # Update tsconfig.build.json to ignore build errors but keep paths
+          node -e "
+            const fs = require('fs');
+            const tsconfig = JSON.parse(fs.readFileSync('tsconfig.build.json', 'utf8'));
+            tsconfig.compilerOptions = tsconfig.compilerOptions || {};
+            tsconfig.compilerOptions.noEmit = false;
+            fs.writeFileSync('tsconfig.build.json', JSON.stringify(tsconfig, null, 2));
+          "
+    
           # 빌드 실행
           NODE_OPTIONS=--max_old_space_size=4096 npx next build --no-lint
-          npx next export
           
           # 원래 파일 복원
           mv next.config.js.bak next.config.js
