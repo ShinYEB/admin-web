@@ -123,6 +123,5 @@ temp/
 /public/output.css
 
 # Package manager
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
