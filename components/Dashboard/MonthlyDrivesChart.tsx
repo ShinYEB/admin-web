@@ -77,6 +77,7 @@ export const MonthlyDrivesChart: React.FC<MonthlyDrivesChartProps> = ({ data }) 
         grid: {
           display: false,
         },
+        reverse: true,
       },
     },
   };
