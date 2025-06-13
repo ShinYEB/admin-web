@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./admin-web  # admin-web 디렉토리가 프로젝트 루트인 경우
+        working-directory: ./
 
     steps:
       - name: Checkout code
@@ -21,12 +21,10 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: './admin-web/package-lock.json'  # 캐시 경로 수정
           
       - name: Install dependencies
         run: npm ci
         
-      # 타입 검사를 별도로 실행해서 오류를 볼 수 있지만 빌드를 실패시키지는 않음
       - name: Type check
         run: npm run type-check || echo "Type check failed but continuing build"
       
