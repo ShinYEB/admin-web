@@ -63,15 +63,20 @@ export const MonthlyDrivesChart: React.FC<MonthlyDrivesChartProps> = ({ data }) 
     scales: {
       y: {
         beginAtZero: true,
+        // grid 안에서 drawBorder 제거
         grid: {
-          drawBorder: false,
+          // drawBorder 속성 삭제
+        },
+        // 새로운 border 객체 추가
+        border: {
+          display: false,  // 이전의 drawBorder: false와 동일한 효과
         },
         ticks: {
-          stepSize: 1000,
-          callback: function(value: any) {
-            return value.toLocaleString();
-          }
-        }
+          stepSize: 1,
+          callback: function(value: number) {
+            return value % 1 === 0 ? value : '';
+          },
+        },
       },
       x: {
         grid: {
