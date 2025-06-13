@@ -26,15 +26,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
-      # 타입 검사를 완전히 건너뛰고 빌드
-      - name: Build and export
+      - name: Build with TypeScript checks disabled
         run: |
-
-          NEXT_TYPESCRIPT_COMPILE_ONLY=false NODE_OPTIONS=--max_old_space_size=4096 npx next build --no-lint || true
-          npx next export -o build
+          # .env 파일에 타입 검사 비활성화 설정 추가
+          echo "NEXT_TYPESCRIPT_COMPILE_ONLY=false" > .env.local
+          echo "NEXT_DISABLE_TYPES=true" >> .env.local
           
-          ls -la
-          ls -la build || echo "build 디렉토리가 없습니다"
+          # 빌드 실행
+          NODE_OPTIONS=--max_old_space_size=4096 npx next build --no-lint
+          
+          # 결과물을 out 디렉토리로 내보내기
+          npx next export
+          
+          # 결과물 확인
+          ls -la out
     
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
