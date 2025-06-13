@@ -63,7 +63,7 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
 
             if (sessionId === null) {
                 console.log("새 세션 생성 중...");
-                const newSessionResponse = await fetch('http://localhost:8000/agent/new', {
+                const newSessionResponse = await fetch('http://modive.site/agent/new', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
 
             // 2단계: 채팅 요청
             console.log("채팅 요청 전송 중...");
-            const chatResponse = await fetch('http://localhost:8000/agent/chat', {
+            const chatResponse = await fetch('http://modive.site/agent/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
