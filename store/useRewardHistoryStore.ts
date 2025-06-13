@@ -17,18 +17,18 @@ interface RewardHistoryStore {
   resetError: () => void;
 }
 
-// Mock 데이터
+// Mock 데이터 업데이트: email → userId로 수정
 const mockRewardHistory: RewardHistoryItem[] = [
-  { rewardId: "SEED_1024", email: "user1@example.com", issuedDate: "2025-04-25", reason: "안전 주행", amount: 12 },
-  { rewardId: "SEED_1023", email: "user2@example.com", issuedDate: "2025-04-24", reason: "에코 주행", amount: 4 },
-  { rewardId: "SEED_1022", email: "user3@example.com", issuedDate: "2025-04-23", reason: "출석 체크", amount: 50 },
-  { rewardId: "SEED_1021", email: "user4@example.com", issuedDate: "2025-04-22", reason: "출석 체크", amount: 12 },
-  { rewardId: "SEED_1020", email: "user5@example.com", issuedDate: "2025-04-21", reason: "안전 주행", amount: 12 },
-  { rewardId: "SEED_1019", email: "user6@example.com", issuedDate: "2025-04-20", reason: "이벤트 미발생", amount: 10 },
-  { rewardId: "SEED_1018", email: "user7@example.com", issuedDate: "2025-04-19", reason: "안전 주행", amount: 5 },
-  { rewardId: "SEED_1017", email: "user8@example.com", issuedDate: "2025-04-18", reason: "에코 주행", amount: 8 },
-  { rewardId: "SEED_1016", email: "user9@example.com", issuedDate: "2025-04-17", reason: "이벤트 미발생", amount: 20 },
-  { rewardId: "SEED_1015", email: "user10@example.com", issuedDate: "2025-04-16", reason: "미션 달성", amount: 100 },
+  { rewardId: "SEED_1024", userId: "1", issuedDate: "2025-04-25", reason: "안전 주행", amount: 12 },
+  { rewardId: "SEED_1023", userId: "2", issuedDate: "2025-04-24", reason: "에코 주행", amount: 4 },
+  { rewardId: "SEED_1022", userId: "3", issuedDate: "2025-04-23", reason: "출석 체크", amount: 50 },
+  { rewardId: "SEED_1021", userId: "4", issuedDate: "2025-04-22", reason: "출석 체크", amount: 12 },
+  { rewardId: "SEED_1020", userId: "5", issuedDate: "2025-04-21", reason: "안전 주행", amount: 12 },
+  { rewardId: "SEED_1019", userId: "6", issuedDate: "2025-04-20", reason: "이벤트 미발생", amount: 10 },
+  { rewardId: "SEED_1018", userId: "7", issuedDate: "2025-04-19", reason: "안전 주행", amount: 5 },
+  { rewardId: "SEED_1017", userId: "8", issuedDate: "2025-04-18", reason: "에코 주행", amount: 8 },
+  { rewardId: "SEED_1016", userId: "9", issuedDate: "2025-04-17", reason: "이벤트 미발생", amount: 20 },
+  { rewardId: "SEED_1015", userId: "10", issuedDate: "2025-04-16", reason: "미션 달성", amount: 100 },
 ];
 
 const mockPageInfo: PageInfo = {
@@ -43,6 +43,7 @@ const useRewardHistoryStore = create<RewardHistoryStore>((set, get) => ({
   rewardHistory: [],
   pageInfo: null,
   filterOptions: {
+    userId: '', // email → userId로 변경
     page: 1,
     pageSize: 10
   },
@@ -91,11 +92,11 @@ const useRewardHistoryStore = create<RewardHistoryStore>((set, get) => ({
       const newOptions = { ...get().filterOptions, ...options };
       set({ isLoading: true, error: null, filterOptions: newOptions });
       
-      // API URL 구성
+      // API URL 구성 (email → userId로 변경)
       let url = '/admin/rewards?';
       const params = new URLSearchParams();
       
-      if (newOptions.email) params.append('email', newOptions.email);
+      if (newOptions.userId) params.append('userId', newOptions.userId); // email → userId로 변경
       if (newOptions.reason) params.append('reason', newOptions.reason);
       if (newOptions.startDate) params.append('startDate', newOptions.startDate);
       if (newOptions.endDate) params.append('endDate', newOptions.endDate);
@@ -121,12 +122,13 @@ const useRewardHistoryStore = create<RewardHistoryStore>((set, get) => ({
     } catch (error) {
       console.error('씨앗 필터링 실패:', error);
       
-      // Mock 데이터로 폴백 (여기서는 필터링 결과를 시뮬레이션)
-      const { email, reason, startDate, endDate } = get().filterOptions;
+      // Mock 데이터로 폴백 - 필터링 로직도 email → userId로 변경
+      const { userId, reason, startDate, endDate } = get().filterOptions;
       let filteredData = [...mockRewardHistory];
       
-      if (email) {
-        filteredData = filteredData.filter(item => item.email?.includes(email));
+      if (userId) {
+        filteredData = filteredData.filter(item => 
+          item.userId?.toString().includes(userId));
       }
       
       if (reason) {
@@ -152,7 +154,7 @@ const useRewardHistoryStore = create<RewardHistoryStore>((set, get) => ({
   
   resetFilter: () => {
     set({ 
-      filterOptions: { page: 1, pageSize: 10 }
+      filterOptions: { userId: '', page: 1, pageSize: 10 } // email → userId로 변경
     });
     get().fetchRewardHistory(1, 10);
   },

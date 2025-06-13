@@ -2,39 +2,39 @@ import React, { useEffect, useState } from 'react';
 import useRewardHistoryStore from '@/store/useRewardHistoryStore';
 import { RewardFilterOptions, RewardHistoryItem } from '@/types/rewardHistory';
 
-// Mock 데이터 추가
+// Mock 데이터 업데이트: email → userId로 변경
 const mockRewardData: RewardHistoryItem[] = [
   {
     rewardId: 'SEED_1024',
-    email: 'user1@example.com',
+    userId: '1', // email → userId로 변경
     issuedDate: '2025-04-25',
     reason: '안전 주행',
     amount: 120
   },
   {
     rewardId: 'SEED_1023',
-    email: 'user2@example.com',
+    userId: '2', // email → userId로 변경
     issuedDate: '2025-04-24',
     reason: '예고 주행',
     amount: 85
   },
   {
     rewardId: 'SEED_1022',
-    email: 'user6@example.com',
+    userId: '6', // email → userId로 변경
     issuedDate: '2025-04-24',
     reason: '출석 체크',
     amount: 50
   },
   {
     rewardId: 'SEED_1021',
-    email: 'user4@example.com',
+    userId: '4', // email → userId로 변경
     issuedDate: '2025-04-23',
     reason: '이벤트 참여',
     amount: 200
   },
   {
     rewardId: 'SEED_1020',
-    email: 'user1@example.com',
+    userId: '1', // email → userId로 변경
     issuedDate: '2025-04-22',
     reason: '안전 주행',
     amount: 95
@@ -115,7 +115,7 @@ const RewardHistory = () => {
                   ID
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  이메일
+                  사용자 ID 
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   발급일
@@ -132,7 +132,7 @@ const RewardHistory = () => {
               {displayData.map((item) => (
                 <tr key={item.rewardId}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.rewardId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.email || '이메일 없음'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.userId || '미지정'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.issuedDate || item.createdAt}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.reason || '미지정'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.amount || 0}</td>

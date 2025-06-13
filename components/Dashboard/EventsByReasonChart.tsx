@@ -81,6 +81,7 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
         },
     };
 
+
     return (
         <div style={{width:"700px", height:"400px"}} >
             <Bar data={chartData} options={options} />
