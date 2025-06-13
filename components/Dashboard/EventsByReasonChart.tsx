@@ -48,6 +48,7 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
         }]
     };
 
+    // 차트 옵션
     const options = {
         responsive: true,
         maintainAspectRatio: false,
@@ -59,19 +60,12 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
         scales: {
             y: {
                 beginAtZero: true,
-                grid: {
-                    drawBorder: false,
-                },
                 ticks: {
-                    stepSize: 1, // 1 단위로 증가
-                    callback: function(value: any) {
-                        // 정수만 표시
-                        if (Number.isInteger(value)) {
-                            return value;
-                        }
-                        return null;
-                    }
-                }
+                    stepSize: 1,
+                    callback: function (value) {
+                        return value % 1 === 0 ? value : '';
+                    },
+                },
             },
             x: {
                 grid: {
@@ -80,7 +74,6 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
             },
         },
     };
-
 
     return (
         <div className="w-full h-full" style={{ minHeight: '250px' }}>
