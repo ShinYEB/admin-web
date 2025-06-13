@@ -10,7 +10,8 @@
     "lint": "next lint",
     "test": "jest",
     "type-check": "tsc --noEmit",
-    "build-css": "tailwindcss -i ./styles/globals.css -o ./public/output.css --watch"
+    "build-css": "tailwindcss -i ./styles/globals.css -o ./public/output.css --watch",
+    "export": "next build && next export -o build"
   },
   "keywords": [],
   "author": "",
