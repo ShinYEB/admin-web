@@ -28,8 +28,7 @@ jobs:
         
       - name: Type check
         run: npm run type-check || echo "Type check failed but continuing build"
-      
-      # 환경 변수를 사용해 타입스크립트 검사를 건너뛰고 빌드
+
       - name: Build and export
         run: |
           DISABLE_ESLINT_PLUGIN=true NEXT_DISABLE_TYPES=1 npm run export
