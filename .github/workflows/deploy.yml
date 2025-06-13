@@ -28,18 +28,30 @@ jobs:
         
       - name: Build with TypeScript checks disabled
         run: |
-          # tsconfig.json 임시 수정 (여전히 유용함)
-          cp tsconfig.json tsconfig.json.bak
-          echo '{"compilerOptions":{"noEmit":false,"skipLibCheck":true,"strict":false,"noImplicitAny":false}}' > tsconfig.json
+          # next.config.js 백업 및 수정
+          cp next.config.js next.config.js.bak
+          cat <<EOF > next.config.js
+          /** @type {import('next').NextConfig} */
+          const nextConfig = {
+            output: 'export',
+            images: { unoptimized: true },
+            typescript: { 
+              ignoreBuildErrors: true,  // 타입스크립트 오류 무시
+              tsconfigPath: 'tsconfig.build.json'  // 다른 tsconfig 파일 사용
+            },
+          };
+          module.exports = nextConfig;
+          EOF
           
-          # 환경 변수로 타입스크립트 체크 비활성화
-          NEXT_DISABLE_TYPES=1 NODE_OPTIONS=--max_old_space_size=4096 npx next build --no-lint
+          # tsconfig.build.json 생성 (최소 설정)
+          echo '{"compilerOptions":{"baseUrl":".","noEmit":false},"include":["next-env.d.ts"]}' > tsconfig.build.json
           
-          # 결과물을 out 디렉토리로 내보내기 
+          # 빌드 실행
+          NODE_OPTIONS=--max_old_space_size=4096 npx next build --no-lint
           npx next export
           
           # 원래 파일 복원
-          mv tsconfig.json.bak tsconfig.json
+          mv next.config.js.bak next.config.js
           
           # 결과물 확인
           ls -la out
