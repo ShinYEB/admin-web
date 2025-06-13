@@ -81,20 +81,22 @@ export const ComboChart: React.FC<ComboChartProps> = ({
                 beginAtZero: config.beginAtZero ?? true,
                 grid: {
                     display: config.showGrid ?? true,
-                    drawBorder: false,
+                },
+                border: {
+                    display: false,
                 },
                 ticks: {
                     stepSize: config.stepSize ?? 25,
-                    callback: function(value: any) {
-                        if (Number.isInteger(value)) {
-                            return value;
-                        }
-                        return null;
-                    }
-                }
+                    callback: function(value: number) {
+                        return value % 1 === 0 ? value : '';
+                    },
+                },
             },
             x: {
                 grid: {
+                    display: false,
+                },
+                border: {
                     display: false,
                 },
             },

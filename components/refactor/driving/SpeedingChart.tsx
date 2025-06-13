@@ -128,52 +128,25 @@ const SpeedingChart: React.FC<SpeedingChartProps> = ({
         scales: {
             y: {
                 beginAtZero: true,
-                max: 150,
                 grid: {
-                    color: SAFETY_COLORS.chart.grid,
-                    drawBorder: false,
+                    // 필요한 grid 속성만 유지
+                },
+                border: {
+                    display: false, // 새로운 방식
                 },
                 ticks: {
-                    stepSize: 25,
-                    color: '#4A5568',
-                    font: {
-                        size: 12,
-                        weight: '500' as const,
-                    },
-                    callback: function(value: any) {
-                        return value;
-                    }
-                },
-                title: {
-                    display: true,
-                    text: '속도 (km/h)',
-                    color: '#4A5568',
-                    font: {
-                        size: 12,
-                        weight: '500' as const,
+                    stepSize: 1,
+                    callback: function(value: number) { // 타입 추가
+                        return value % 1 === 0 ? value : '';
                     },
                 },
             },
             x: {
                 grid: {
-                    color: SAFETY_COLORS.chart.lightGrid,
-                    drawBorder: false,
+                    display: false,
                 },
-                ticks: {
-                    color: '#4A5568',
-                    font: {
-                        size: 12,
-                        weight: '500' as const,
-                    },
-                },
-                title: {
-                    display: true,
-                    text: '시간 구간',
-                    color: '#4A5568',
-                    font: {
-                        size: 12,
-                        weight: '500' as const,
-                    },
+                border: {
+                    display: false, // x축에도 필요시 추가
                 },
             },
         },

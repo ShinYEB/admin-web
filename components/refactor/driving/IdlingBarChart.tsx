@@ -98,7 +98,7 @@ const IdlingBarChart: React.FC<IdlingBarChartProps> = ({
                 max: Math.max(...events.map(item => item.duration)) * 1.2,
                 grid: {
                     color: CARBON_COLORS.chart.lightGrid,
-                    drawBorder: false,
+                    display: false,
                 },
                 ticks: {
                     callback: function(value: any) {
@@ -112,10 +112,18 @@ const IdlingBarChart: React.FC<IdlingBarChartProps> = ({
                 },
             },
             y: {
+                beginAtZero: true,
                 grid: {
                     display: false,
                 },
+                border: {
+                    display: false,
+                },
                 ticks: {
+                    stepSize: 1,
+                    callback: function(value: number) {
+                        return value % 1 === 0 ? value : '';
+                    },
                     color: '#4A5568',
                     font: {
                         size: 12,

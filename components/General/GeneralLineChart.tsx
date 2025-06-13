@@ -79,18 +79,23 @@ export const GeneralLineChart: React.FC<GeneralLineChartProps> = ({
                 beginAtZero: config.beginAtZero ?? true,
                 grid: {
                     display: config.showGrid ?? true,
-                    drawBorder: false,
+                },
+                border: {
+                    display: false,
                 },
                 ticks: {
                     stepSize: config.stepSize,
-                    callback: function(value: any) {
-                        return value.toLocaleString();
-                    }
-                }
+                    callback: function(value: number) {
+                        return value % 1 === 0 ? value : '';
+                    },
+                },
             },
             x: {
                 grid: {
                     display: config.showGrid ?? false,
+                },
+                border: {
+                    display: false,
                 },
             },
         },

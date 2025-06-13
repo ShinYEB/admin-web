@@ -79,8 +79,18 @@ export const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
                 },
             },
             y: {
+                beginAtZero: true,
                 grid: {
                     display: false,
+                },
+                border: {
+                    display: false,
+                },
+                ticks: {
+                    stepSize: 1,
+                    callback: function(value: number) {
+                        return value % 1 === 0 ? value : '';
+                    },
                 },
             },
         },

@@ -90,29 +90,25 @@ export const SpeedDistributionChart: React.FC<SpeedDistributionProps> = ({
         scales: {
             y: {
                 beginAtZero: true,
-                max: 150,
                 grid: {
-                    display: config.showGrid ?? true,
-                    drawBorder: false,
+                    // 필요한 grid 속성만 유지
+                },
+                border: {
+                    display: false, // 새로운 방식
                 },
                 ticks: {
-                    stepSize: 25,
-                    callback: function(value: any) {
-                        return value;
-                    }
-                },
-                title: {
-                    display: true,
-                    text: '속도 (km/h)',
+                    stepSize: 1,
+                    callback: function(value: number) { // 타입 추가
+                        return value % 1 === 0 ? value : '';
+                    },
                 },
             },
             x: {
                 grid: {
                     display: false,
                 },
-                title: {
-                    display: true,
-                    text: '시간 구간',
+                border: {
+                    display: false, // x축에도 필요시 추가
                 },
             },
         },

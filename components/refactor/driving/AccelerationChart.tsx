@@ -103,27 +103,25 @@ const AccelerationChart: React.FC<AccelerationChartProps> = ({
         scales: {
             y: {
                 beginAtZero: true,
-                max: 100,
                 grid: {
                     color: SAFETY_COLORS.chart.grid,
-                    drawBorder: false,
+                },
+                border: {
+                    display: false,
                 },
                 ticks: {
-                    stepSize: 25,
-                    callback: function(value: any) {
-                        if (Number.isInteger(value)) {
-                            return value;
-                        }
-                        return null;
-                    }
-                }
+                    stepSize: 1,
+                    callback: function(value: number) {
+                        return value % 1 === 0 ? value : '';
+                    },
+                },
             },
             x: {
                 grid: {
                     display: false,
                 },
                 border: {
-                    color: SAFETY_COLORS.chart.grid,
+                    display: false,
                 },
             },
         },

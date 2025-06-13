@@ -83,10 +83,10 @@ export const UserTrendsChart: React.FC<UserTrendsChartProps> = ({ data }) => {
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'bottom' as const,
+                position: "bottom" as const,
                 labels: {
                     usePointStyle: true,
-                    boxWidth: 6,
+                    boxWidth: 10,
                     padding: 20,
                 },
             },
@@ -95,20 +95,23 @@ export const UserTrendsChart: React.FC<UserTrendsChartProps> = ({ data }) => {
             y: {
                 beginAtZero: true,
                 grid: {
-                    drawBorder: false,
+                    display: false,
+                },
+                border: {
+                    display: false,
                 },
                 ticks: {
-                    stepSize: 100,
-                    callback: function(value: any) {
-                        if (Number.isInteger(value)) {
-                            return value.toLocaleString();
-                        }
-                        return null;
-                    }
-                }
+                    stepSize: 1,
+                    callback: function(value: number) {
+                        return value % 1 === 0 ? value : '';
+                    },
+                },
             },
             x: {
                 grid: {
+                    display: false,
+                },
+                border: {
                     display: false,
                 },
             },
