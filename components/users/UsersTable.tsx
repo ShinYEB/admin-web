@@ -61,9 +61,6 @@ const UsersTable: React.FC<UsersTableProps> = ({
                 운전 경력
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                운전 횟수
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 상태
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -87,10 +84,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
                   {user.joinedAt.split("T")[0]}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.experience}년
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.driveCount}회
+                  {user.experience}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span

@@ -5,7 +5,7 @@ import {
   useUserDetail,
   useUserRecords,
   useUserActions,
-} from "@/store/userUserStore";
+} from "@/store/useUserStore";
 import { User } from "@/types/user";
 import UsersTable from "@/components/users/UsersTable";
 import UserDetailModal from "@/components/users/UserDetailModal";

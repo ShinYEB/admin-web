@@ -4,7 +4,7 @@ import React from "react";
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  totalElements: number;
+  totalElements?: number; // 옵셔널로 변경
   pageSize: number;
   onPageChange: (page: number) => void;
 }
@@ -12,14 +12,14 @@ interface PaginationProps {
 const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
-  totalElements,
+  totalElements = 0, // 기본값 추가
   pageSize,
   onPageChange,
 }) => {
   if (totalPages <= 1) return null;
 
   const startItem = currentPage * pageSize + 1;
-  const endItem = Math.min((currentPage + 1) * pageSize, totalElements);
+  const endItem = Math.min((currentPage + 1) * pageSize, totalElements || 0);
 
   return (
     <div className="flex items-center justify-between mt-6">

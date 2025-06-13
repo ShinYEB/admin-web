@@ -22,7 +22,7 @@ interface UserTrendsResponse {
   data: {
     userStatistics: {
       summary: UserTrendSummary;
-      userTrend: UserTrendItem[];
+      userTrends: UserTrendItem[]; // 'userTrend'에서 'userTrends'로 변경
     };
   };
 }
@@ -79,13 +79,21 @@ const useUserTrendsStore = create<UserTrendsStore>((set) => ({
         token,
       });
       
-      // 안전한 데이터 접근 - 응답 구조 검증
+      console.log('API 응답:', response); // 응답 구조 확인용
+      
+      // 안전한 데이터 접근 - 응답 구조 검증 (수정된 부분)
       if (response?.data?.userStatistics) {
         const { userStatistics } = response.data;
         
-        // summary와 userTrend 각각 검증
+        // summary와 userTrends(복수형) 각각 검증
         const summary = userStatistics.summary || null;
-        const trends = Array.isArray(userStatistics.userTrend) ? userStatistics.userTrend : null;
+        
+        // userTrends(복수형) 필드 사용
+        const trends = Array.isArray(userStatistics.userTrends) 
+          ? userStatistics.userTrends 
+          : (Array.isArray(userStatistics.userTrend) ? userStatistics.userTrend : null);
+        
+        console.log('변환된 trends 데이터:', trends);
         
         set({ 
           summary,

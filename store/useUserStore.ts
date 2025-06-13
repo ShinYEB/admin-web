@@ -1,7 +1,7 @@
 // store/userStore.ts
 import { create } from 'zustand';
 import { User, UserDetail, DrivingRecord, SeedRecord, FilterParams } from '@/types/user';
-import { userService } from '@/pages/api/userService';
+import { userService } from '@/services/userService';
 
 interface UserState {
   // 사용자 목록 상태
@@ -74,34 +74,91 @@ const useUserStore = create<UserState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const finalParams = params || state.currentFilters;
+      // pageSize가 없으면 기본값 설정
+      const pageSize = params?.pageSize || state.pageSize || 10;
       
-      console.log('API 호출 파라미터:', finalParams);
-
-      const response = await userService.getUsersWithDriveCount(finalParams);
+      // 현재 상태와 파라미터 병합
+      const queryParams = {
+        ...state.currentFilters,
+        ...params,
+        page: params?.page ?? state.currentPage,
+        pageSize: pageSize,
+      };
       
-      console.log('API 응답:', response);
-
-      set({
-        users: response.content,
-        totalPages: response.totalPages,
-        totalElements: response.totalElements,
-        currentPage: response.number,
-        pageSize: response.size,
-        currentFilters: finalParams,
-        isLoading: false,
-        error: null,
-      });
+      console.log("API 호출 파라미터:", queryParams);
       
-      console.log('스토어 업데이트 완료 - 페이지 크기:', response.size, '현재 페이지:', response.number);
+      // userService는 PageResponse<User>를 직접 반환
+      const response = await userService.getUsersWithDriveCount(queryParams);
+      console.log("API 응답:", response);
+      
+      // 응답 구조 검증 및 처리
+      if (response && typeof response === 'object') {
+        // PageResponse<User> 형태의 응답 처리
+        if ('content' in response && Array.isArray(response.content)) {
+          const { content, totalPages, totalElements, size, number, first, last } = response;
+          
+          set({
+            users: content || [],
+            totalPages: totalPages || 0,
+            totalElements: totalElements || 0,
+            pageSize: size || pageSize,
+            currentPage: number || 0,
+            isLoading: false,
+            error: null,
+          });
+          
+          console.log(`스토어 업데이트 완료 - 페이지 크기: ${size}, 현재 페이지: ${number}, 총 사용자: ${totalElements}`);
+        }
+        // 이전 형태의 응답 처리 (하위 호환성)
+        else if (
+          'data' in response &&
+          response.data &&
+          typeof response.data === 'object' &&
+          'filterResult' in response.data &&
+          response.data.filterResult
+        ) {
+          const { content, totalPages, totalElements, size, number } = (response.data as { filterResult: any }).filterResult;
+          
+          set({
+            users: content || [],
+            totalPages: totalPages || 0,
+            totalElements: totalElements || 0,
+            pageSize: size || pageSize,
+            currentPage: number || 0,
+            isLoading: false,
+            error: null,
+          });
+          
+          console.log(`스토어 업데이트 완료 (레거시) - 페이지 크기: ${size}, 현재 페이지: ${number}`);
+        }
+        // 예상하지 못한 응답 구조
+        else {
+          console.error("예상하지 못한 API 응답 구조:", response);
+          console.error("응답 키들:", Object.keys(response));
+          
+          // 빈 결과로 처리
+          set({
+            users: [],
+            totalPages: 0,
+            totalElements: 0,
+            pageSize: pageSize,
+            currentPage: 0,
+            isLoading: false,
+            error: "API 응답 형식이 예상과 다릅니다.",
+          });
+        }
+      } else {
+        throw new Error("API 응답이 null이거나 올바른 형식이 아닙니다.");
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '사용자 목록 조회에 실패했습니다.';
-      set({
-        users: [],
-        totalPages: 0,
-        totalElements: 0,
-        isLoading: false,
+      console.error("사용자 목록 로딩 중 오류:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : "사용자 데이터를 불러오는데 실패했습니다";
+      
+      set({ 
         error: errorMessage,
+        isLoading: false,
+        users: [], // 에러 시 빈 배열로 초기화
       });
     }
   },
@@ -109,18 +166,22 @@ const useUserStore = create<UserState>((set, get) => ({
   setPage: async (page: number) => {
     const state = get();
     const newFilters = { ...state.currentFilters, page };
+    set({ currentPage: page }); // 즉시 페이지 상태 업데이트
     await get().fetchUsers(newFilters);
   },
 
   setPageSize: async (pageSize: number) => {
     const state = get();
-    set({ pageSize });
+    set({ pageSize, currentPage: 0 }); // 페이지 크기 변경 시 첫 페이지로
     const newFilters = { ...state.currentFilters, pageSize, page: 0 };
     await get().fetchUsers(newFilters);
   },
 
   setFilters: (filters: FilterParams) => {
-    set({ currentFilters: filters });
+    set({ 
+      currentFilters: filters,
+      currentPage: 0, // 필터 변경 시 첫 페이지로
+    });
   },
 
   clearFilters: () => {
@@ -210,6 +271,10 @@ const useUserStore = create<UserState>((set, get) => ({
   deleteUser: async (userId: string) => {
     try {
       await userService.deleteUser(userId);
+      
+      // 삭제 성공 시 목록 새로고침
+      const state = get();
+      await get().fetchUsers(state.currentFilters);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '사용자 탈퇴에 실패했습니다.';
       set({ error: errorMessage });
