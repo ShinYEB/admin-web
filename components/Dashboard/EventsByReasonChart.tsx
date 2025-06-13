@@ -62,7 +62,7 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
                 beginAtZero: true,
                 ticks: {
                     stepSize: 1,
-                    callback: function (value) {
+                    callback: function (value: number) {  // 'number' 타입 명시
                         return value % 1 === 0 ? value : '';
                     },
                 },
