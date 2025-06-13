@@ -26,7 +26,30 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
     };
 
     useEffect(() => {
+        const message = sessionStorage.getItem("messages")
+
+        if (message != null) {
+            try {
+                // JSON 파싱 시 에러 처리
+                const parsedMessages = JSON.parse(message);
+                setMessages(parsedMessages);
+                console.log(parsedMessages);
+            } catch (error) {
+                console.error("sessionStorage 데이터 파싱 실패:", error);
+                // 잘못된 데이터가 있다면 제거
+                sessionStorage.removeItem("messages");
+            }
+        } else {
+            console.log("new session");
+        }
+
+    }, []);
+
+    useEffect(() => {
         scrollToBottom();
+        if (messages && messages.length > 0) {
+            sessionStorage.setItem("messages", JSON.stringify(messages));
+        }
     }, [messages]);
 
     const agentRequest = async () => {
@@ -152,7 +175,7 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
         setMessages([
             {
                 id: 1,
-                text: "채팅이 초기화되었습니다. 새로운 질문을 해주세요!",
+                text: "안녕하세요! MODIVE AI 어시스턴트입니다. 회원 정보 조회, 데이터 분석 등 다양한 업무를 도와드릴 수 있습니다. 무엇을 도와드릴까요?",
                 sender: 'ai',
                 timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
             }
