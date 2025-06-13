@@ -25,31 +25,31 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    useEffect(() => {
-        const message = sessionStorage.getItem("messages")
-
-        if (message != null) {
-            try {
-                // JSON 파싱 시 에러 처리
-                const parsedMessages = JSON.parse(message);
-                setMessages(parsedMessages);
-                console.log(parsedMessages);
-            } catch (error) {
-                console.error("sessionStorage 데이터 파싱 실패:", error);
-                // 잘못된 데이터가 있다면 제거
-                sessionStorage.removeItem("messages");
-            }
-        } else {
-            console.log("new session");
-        }
-
-    }, []);
+    // useEffect(() => {
+    //     const message = sessionStorage.getItem("messages")
+    //
+    //     if (message != null) {
+    //         try {
+    //             // JSON 파싱 시 에러 처리
+    //             const parsedMessages = JSON.parse(message);
+    //             setMessages(parsedMessages);
+    //             console.log(parsedMessages);
+    //         } catch (error) {
+    //             console.error("sessionStorage 데이터 파싱 실패:", error);
+    //             // 잘못된 데이터가 있다면 제거
+    //             sessionStorage.removeItem("messages");
+    //         }
+    //     } else {
+    //         console.log("new session");
+    //     }
+    //
+    // }, []);
 
     useEffect(() => {
         scrollToBottom();
-        if (messages && messages.length > 0) {
-            sessionStorage.setItem("messages", JSON.stringify(messages));
-        }
+        // if (messages && messages.length > 0) {
+        //     sessionStorage.setItem("messages", JSON.stringify(messages));
+        // }
     }, [messages]);
 
     const agentRequest = async () => {
