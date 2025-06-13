@@ -64,7 +64,7 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
 
             if (sessionId === null) {
                 console.log("새 세션 생성 중...");
-                const newSessionResponse = await fetch('http://modive.site/agent/new', {
+                const newSessionResponse = await fetch('/api/agent/new', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -85,12 +85,54 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
                 sessionId = newSessionData.data;
                 sessionStorage.setItem("session_id", sessionId);
             } else {
-                console.log("기존 세션 사용:", sessionId);
+                // 세션 ID 유효성 검사 추가
+    try {
+        console.log("기존 세션 사용:", sessionId);
+        // 만약 세션 ID가 객체로 저장되었다면 문자열로 변환
+        if (typeof sessionId === 'object') {
+            console.error("세션 ID 형식 오류, 재설정합니다");
+            sessionStorage.removeItem("session_id");
+            
+            // 새 세션 생성 요청
+            console.log("새 세션 생성 중...");
+            const newSessionResponse = await fetch('/api/agent/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authService.getAuthHeaders()['Authorization']
+                },
+                body: JSON.stringify({
+                    "userId": "userId"
+                })
+            });
+
+            if (!newSessionResponse.ok) {
+                throw new Error('새 세션 생성 실패');
+            }
+
+            const newSessionData = await newSessionResponse.json();
+            sessionId = newSessionData.data;
+            sessionStorage.setItem("session_id", sessionId);
+        }
+    } catch (e) {
+        console.error("세션 ID 처리 오류:", e);
+        // 오류 발생 시 세션 초기화
+        sessionStorage.removeItem("session_id");
+        throw new Error('세션 ID 처리 중 오류 발생');
+    }
             }
 
             // 2단계: 채팅 요청
             console.log("채팅 요청 전송 중...");
-            const chatResponse = await fetch('http://modive.site/agent/chat', {
+            console.log("채팅 요청 전송:", {
+                prompt: inputValue,
+                session_id: sessionId,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authService.getAuthHeaders()['Authorization'] ? 'Set (not showing value)' : 'Not set'
+                }
+            });
+            const chatResponse = await fetch('/api/agent/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -102,8 +144,13 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
                 })
             });
 
+            // 에러 처리 부분을 수정합니다
             if (!chatResponse.ok) {
-                throw new Error(`채팅 요청 실패: ${chatResponse.status}`);
+                console.error(`API 응답 오류: ${chatResponse.status}`);
+                responseText = '요청 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+                setApiResponse(responseText);
+                // throw 대신 에러 처리 후 계속 진행
+                return; // 여기서 함수 실행을 중단
             }
 
             // 3단계: 응답 처리
@@ -116,7 +163,7 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
                 chatbotProps.setComponents(result.data.components);
             }
 
-            // 5단계: 세션 ID 업데이트 (응답에서 새로운 세션 ID가 온 경우)
+            // 5단계: 세션 ID 업데이트
             if (result.data.session_id) {
                 sessionStorage.setItem("session_id", result.data.session_id);
             }
@@ -127,9 +174,10 @@ const Chatbot = (chatbotProps: ChatbotProps) => {
             console.log("처리 완료");
 
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error details:', error);
             responseText = 'Agent 호출에 실패했습니다. 다시 시도해주세요.';
             setApiResponse(responseText);
+            // 여기서 return하거나 router.push() 같은 내비게이션 관련 코드가 없는지 확인
         } finally {
             setIsTyping(false);
 
