@@ -142,7 +142,7 @@ const Dashboard = () => {
           </div>
 
           {/* 이벤트 유형별 추이 */}
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 overflow-hidden">
             <h2 className="text-lg font-medium mb-4">이벤트 유형별 추이</h2>
             {isEventsLoading ? (
               <div className="flex justify-center items-center h-64">
@@ -159,7 +159,7 @@ const Dashboard = () => {
                 </button>
               </div>
             ) : (
-              <div className="h-64">
+              <div className="h-64 overflow-hidden">
                 <EventsByReasonChart data={events || []} />
               </div>
             )}

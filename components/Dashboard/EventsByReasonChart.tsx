@@ -44,7 +44,7 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
         datasets: [{
             data: data.map(item => item.count == null? item.frequency : item.count),
             backgroundColor: data.map((_, index) => eventColors[index % eventColors.length]),
-            barThickness: 35,
+            barThickness: 30,
         }]
     };
 
@@ -83,7 +83,7 @@ export const EventsByReasonChart: React.FC<EventsByReasonChartProps> = ({ data }
 
 
     return (
-        <div style={{width:"700px", height:"400px"}} >
+        <div className="w-full h-full" style={{ minHeight: '250px' }}>
             <Bar data={chartData} options={options} />
         </div>
     );

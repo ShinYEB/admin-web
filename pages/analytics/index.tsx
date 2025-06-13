@@ -150,23 +150,7 @@ const AnalyticsPage = () => {
       <div className="pb-6">
         <h1 className="text-2xl font-medium mb-6">씨앗 내역 통계</h1>
         
-        {isSummaryLoading ? (
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : summaryError ? (
-          <div className="bg-red-50 p-4 rounded-lg mb-6">
-            <p className="text-red-600">{summaryError}</p>
-            <button 
-              onClick={() => fetchRewardSummary()} 
-              className="mt-2 text-sm text-blue-500 hover:underline"
-            >
-              다시 시도
-            </button>
-          </div>
-        ) : null}
-
-        {/* 통계 카드 */}
+        {/* 통계 카드 섹션 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {statCards.map((card, index) => (
             <div key={index} className="bg-white rounded-lg shadow p-4">
@@ -185,7 +169,7 @@ const AnalyticsPage = () => {
         {/* 차트 섹션 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* 발급 사유별 비율 */}
-          <Card className="p-4">
+          <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium">발급 사유별 비율</h2>
               <div className="flex space-x-2">
@@ -299,13 +283,15 @@ const AnalyticsPage = () => {
           </Card>
 
           {/* 월별 씨앗 지급 추이 */}
-          <Card className="p-4 mt-6">
+          <Card className="p-4">
             <h2 className="text-lg font-medium mb-4">월별 씨앗 지급 추이</h2>
             <MonthlyRewardsChart />
           </Card>
-          
-          {/* 최근 씨앗 발급 내역 추가 - md:col-span-2 추가 */}
-          <Card className="p-4 mt-6 md:col-span-2">
+        </div>
+        
+        {/* 테이블 섹션 - 별도 컨테이너로 분리 */}
+        <div className="mb-6">
+          <Card className="p-4">
             <h2 className="text-lg font-medium mb-4">최근 씨앗 발급 내역</h2>
             <RewardHistory />
           </Card>
