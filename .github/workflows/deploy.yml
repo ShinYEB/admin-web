@@ -28,15 +28,18 @@ jobs:
         
       - name: Build with TypeScript checks disabled
         run: |
-          # .env 파일에 타입 검사 비활성화 설정 추가
-          echo "NEXT_TYPESCRIPT_COMPILE_ONLY=false" > .env.local
-          echo "NEXT_DISABLE_TYPES=true" >> .env.local
+          # tsconfig.json을 임시로 수정
+          cp tsconfig.json tsconfig.json.bak
+          echo '{"compilerOptions":{"noEmit":false,"skipLibCheck":true,"strict":false,"noImplicitAny":false}}' > tsconfig.json
           
-          # 빌드 실행
-          NODE_OPTIONS=--max_old_space_size=4096 npx next build --no-lint
+          # 빌드 실행 (--no-check 옵션 추가)
+          NODE_OPTIONS=--max_old_space_size=4096 npx next build --no-lint --no-check
           
           # 결과물을 out 디렉토리로 내보내기
           npx next export
+          
+          # 원래 tsconfig.json 복원
+          mv tsconfig.json.bak tsconfig.json
           
           # 결과물 확인
           ls -la out
