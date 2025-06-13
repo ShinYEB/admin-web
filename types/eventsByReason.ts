@@ -1,8 +1,10 @@
 import { ApiResponse } from './api';
 
 export interface EventByReason {
-  reason: string;
-  count: number;
+  reason?: string;
+  count?: number;
+  type?: string; // 이 속성 추가
+  frequency?: number;
 }
 
 export interface EventsByReasonResponse extends ApiResponse<{

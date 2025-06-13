@@ -5,15 +5,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  reactStrictMode: true,
-  async rewrites() {
-    return [
-      {
-        source: '/api/modive/:path*',
-        destination: 'http://modive.site/:path*',
-      },
-    ];
-  },
+  // reactStrictMode: true,
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/api/modive/:path*',
+  //       destination: 'http://modive.site/:path*',
+  //     },
+  //   ];
+  // },
 };
 
 module.exports = nextConfig;
