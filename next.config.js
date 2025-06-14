@@ -8,7 +8,6 @@ const nextConfig = {
     // ESLint 오류도 무시
     ignoreDuringBuilds: true,
   },
-  output: 'export',
   // 이미지 설정 (Next.js 이미지 최적화가 정적 내보내기에서는 작동하지 않음)
   images: {
     unoptimized: true,
