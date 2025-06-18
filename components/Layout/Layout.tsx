@@ -62,7 +62,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Modive 관리자' })
       current: router.pathname.startsWith('/analytics'),
     },
     {
-      name: "챗봇",
+      name: "AI 에이전트",
       href: "/custom",
       icon: ChatBubbleBottomCenterIcon,
       current: router.pathname.startsWith("/custom"),
