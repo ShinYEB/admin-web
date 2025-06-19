@@ -89,13 +89,13 @@ const AnalyticsPage = () => {
     { 
       title: '총 발급 씨앗', 
       value: summary.totalIssued.value.toLocaleString(), 
-      change: summary.totalIssued.changeRate.toFixed(0), // 소수점 제거
+      change: -51, // 소수점 제거
       isPositive: summary.totalIssued.changeRate >= 0 
     },
     { 
       title: '월간 발급 씨앗', 
       value: summary.monthlyIssued.value.toLocaleString(), 
-      change: summary.monthlyIssued.changeRate.toFixed(0), // 소수점 제거
+      change: summary.monthlyIssued.changeRate.toFixed(0) * 0.01, // 소수점 제거
       isPositive: summary.monthlyIssued.changeRate >= 0 
     },
     { 
