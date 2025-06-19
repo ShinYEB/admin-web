@@ -49,11 +49,11 @@ const Dashboard = () => {
     },
     { 
       label: '전월 대비 사용자 증가율', 
-      value: summary ? `${summary.monthlyUserGrowthRate.toFixed(1)}%` : '-' 
+      value: summary ? `${(summary.monthlyUserGrowthRate * 100).toFixed(0)}%` : '-' 
     },
     { 
       label: '이탈률', 
-      value: summary ? `${summary.churnRate.toFixed(1)}%` : '-' 
+      value: summary ? `${(summary.churnRate * 100).toFixed(0)}%` : '-' 
     },
   ];
 
@@ -62,24 +62,35 @@ const Dashboard = () => {
     { 
       title: '총 사용자 수', 
       value: statistics.totalUsers.value.toLocaleString(), 
-      increase: `${statistics.totalUsers.changeRate.toFixed(1)}%` 
+      increase: statistics.totalUsers.changeRate  // % 기호와 toFixed 제거
     },
     { 
       title: '디바이스 수', 
       value: statistics.totalDevices.value.toLocaleString(), 
-      increase: `${statistics.totalDevices.changeRate.toFixed(1)}%` 
+      increase: statistics.totalDevices.changeRate  // % 기호와 toFixed 제거
     },
     { 
       title: '누적 운전 횟수', 
       value: statistics.totalDrives.value.toLocaleString(), 
-      increase: `${statistics.totalDrives.changeRate.toFixed(1)}%` 
+      increase: statistics.totalDrives.changeRate  // % 기호와 toFixed 제거
     },
     { 
       title: '누적 적립 씨앗', 
       value: statistics.totalIssuedRewards.value.toLocaleString(), 
-      increase: `${statistics.totalIssuedRewards.changeRate.toFixed(1)}%` 
+      increase: statistics.totalIssuedRewards.changeRate  // % 기호와 toFixed 제거
     },
   ] : [];
+
+  useEffect(() => {
+    if (statistics) {
+      console.log('백엔드 증가율 원본 데이터:', {
+        totalUsers: statistics.totalUsers.changeRate,
+        totalDevices: statistics.totalDevices.changeRate,
+        totalDrives: statistics.totalDrives.changeRate,
+        totalRewards: statistics.totalIssuedRewards.changeRate
+      });
+    }
+  }, [statistics]);
 
   return (
     <Layout title="대시보드 | Modive 관리자">
@@ -109,7 +120,31 @@ const Dashboard = () => {
               <p className="text-sm text-gray-500 mb-1">{card.title}</p>
               <div className="flex items-baseline justify-between">
                 <p className="text-xl font-bold">{card.value}</p>
-                <span className="text-sm text-green-500">▲ {card.increase} 증가</span>
+                {/* 증가/감소 표시 로직 개선 */}
+                {(() => {
+                  // 증가율 값 (원본값에 100 곱하기)
+                  const rateValue = card.increase * 100;
+                  
+                  if (rateValue > 0) {
+                    return (
+                      <span className="text-sm text-green-500">
+                        ▲ {rateValue.toFixed(0)}% 증가
+                      </span>
+                    );
+                  } else if (rateValue < 0) {
+                    return (
+                      <span className="text-sm text-red-500">
+                        ▼ {Math.abs(rateValue).toFixed(0)}% 감소
+                      </span>
+                    );
+                  } else {
+                    return (
+                      <span className="text-sm text-gray-500">
+                        변동 없음
+                      </span>
+                    );
+                  }
+                })()}
               </div>
             </div>
           ))}

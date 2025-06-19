@@ -84,30 +84,30 @@ const AnalyticsPage = () => {
     };
   }, [mode, totalStats, monthlyStats]);
 
-  // 통계 카드 데이터
+  // 통계 카드 데이터 - 소수점 제거 (.toFixed(1) → .toFixed(0))
   const statCards = summary ? [
     { 
       title: '총 발급 씨앗', 
       value: summary.totalIssued.value.toLocaleString(), 
-      change: summary.totalIssued.changeRate.toFixed(1), 
+      change: summary.totalIssued.changeRate.toFixed(0), // 소수점 제거
       isPositive: summary.totalIssued.changeRate >= 0 
     },
     { 
       title: '월간 발급 씨앗', 
       value: summary.monthlyIssued.value.toLocaleString(), 
-      change: summary.monthlyIssued.changeRate.toFixed(1), 
+      change: summary.monthlyIssued.changeRate.toFixed(0), // 소수점 제거
       isPositive: summary.monthlyIssued.changeRate >= 0 
     },
     { 
       title: '일평균 발급', 
       value: summary.dailyAverageIssued.value.toLocaleString(), 
-      change: summary.dailyAverageIssued.changeRate.toFixed(1), 
+      change: summary.dailyAverageIssued.changeRate.toFixed(0), // 소수점 제거 
       isPositive: summary.dailyAverageIssued.changeRate >= 0 
     },
     { 
       title: '사용자당 평균', 
       value: summary.perUserAverageIssued.value.toLocaleString(), 
-      change: summary.perUserAverageIssued.changeRate.toFixed(1), 
+      change: summary.perUserAverageIssued.changeRate.toFixed(0), // 소수점 제거
       isPositive: summary.perUserAverageIssued.changeRate >= 0 
     },
   ] : [];
@@ -145,6 +145,18 @@ const AnalyticsPage = () => {
     }
   };
 
+  // summary 객체가 있으면 원본 데이터 로깅
+  useEffect(() => {
+    if (summary) {
+      console.log('씨앗 통계 원본 데이터:', {
+        총발급씨앗: summary.totalRewards?.changeRate,
+        월간발급씨앗: summary.monthlyRewards?.changeRate,
+        일평균발급: summary.dailyAverage?.changeRate,
+        사용자당평균: summary.averagePerUser?.changeRate
+      });
+    }
+  }, [summary]);
+
   return (
     <Layout title="씨앗 내역 통계 | Modive 관리자">
       <div className="pb-6">
@@ -158,7 +170,7 @@ const AnalyticsPage = () => {
               <div className="flex items-baseline justify-between">
                 <p className="text-xl font-bold">{card.value}</p>
                 <span className={`text-sm ${card.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                  {card.isPositive ? '▲' : '▼'} {card.change}% 
+                  {card.isPositive ? '▲' : '▼'} {Math.abs(parseInt(card.change))}% {/* 정수로 변환 */}
                   {card.isPositive ? '증가' : '감소'}
                 </span>
               </div>
