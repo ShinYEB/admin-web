@@ -77,7 +77,7 @@ const Dashboard = () => {
     { 
       title: '누적 적립 씨앗', 
       value: statistics.totalIssuedRewards.value.toLocaleString(), 
-      increase: -0.51  // % 기호와 toFixed 제거
+      increase: 0.51  // % 기호와 toFixed 제거
     },
   ] : [];
 
